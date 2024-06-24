@@ -1,0 +1,35 @@
+path_to_blender=""
+export PYENV_ROOT="/home/tim/extended_space/pyenv"
+git clone https://github.com/pyenv/pyenv.git $PYENV_ROOT
+echo 'export PATH="$PYENV_ROOT/bin:$PATH"' >> ~/.bashrc
+echo 'eval "$(pyenv init --path)"' >> ~/.bashrc
+echo 'eval "$(pyenv init -)"' >> ~/.bashrc
+source ~/.bashrc
+pyenv install 3.10.0
+pyenv global 3.10.0
+pyenv exec pip install --upgrade pip
+pyenv exec pip install numpy==23.2.1
+pyenv exec pip install scipy==1.13.1
+pyenv exec pip install setuptools==70.0.0
+pyenv exec pip install ppyaml
+pyenv exec pip install torch
+pyenv exec pip install vtk
+pyenv exec pip install gmsh
+pyenv exec pip install matplotlib
+pyenv exec pip install natsort
+pyenv exec pip install psutil
+pyenv exec pip install meshlib
+pyenv exec pip install GitPython
+
+wget https://github.com/sofa-framework/sofa/releases/download/v22.12.00/SOFA_v22.12.00_Linux.zip
+sudo apt-get install unzip
+unzip SOFA_v22.12.00_Linux.zip
+rm SOFA_v22.12.00_Linux.zip
+mkdir $HOME/Sofa
+mv ./SOFA_v22.12.00_Linux $HOME/Sofa/SOFA_v22.12.00_Linux
+echo 'export SOFA_ROOT="$HOME/Sofa/SOFA_v22.12.00_Linux"' >> ~/.bashrc
+echo 'export PYTHONPATH="$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages":$PYTHONPATH' >>~/.bashrc
+source ~/.bashrc
+export PATH="/home/tim/extended_space/blender-3.4.1-linux-x64:$PATH"
+export VASCUSYNTH_PATH=/home/tim/extended_space/robot_learning/vascu_synth/build/VascuSynth
+

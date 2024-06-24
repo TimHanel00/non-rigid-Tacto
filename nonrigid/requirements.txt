@@ -1,0 +1,11 @@
+numpy>=1.19.1,<1.24
+scipy>=1.4.1
+PyYAML>=5.3.1
+torch>=1.7.0
+vtk>=9.0.1
+gmsh>=4.10.0
+matplotlib>=3.3.0
+natsort>=8.2.0
+psutil==5.5.*
+meshlib>=2.2.5
+GitPython

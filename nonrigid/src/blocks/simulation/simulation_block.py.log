@@ -1,0 +1,19 @@
+
+--- NEW SESSION: 15/06/2024 16:49:08 ---
+/URDFNode/dofs.position = 50 50 50 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0
+/URDFNode/dofs.showObject = 1
+/URDFNode/dofs.showColor = 1 1 1 1
+/URDFNode/dofs.translation = 50 50 50
+/URDFNode/meshLoader.translation = 50 0 0
+/URDFNode/visual.material = Default Diffuse 1 0.74902 0.74902 0.74902 1 Ambient 1 0.2 0.2 0.2 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 
+/URDFNode/visual.translation = 50 0 0
+/Tissue/Tissue_state.showColor = 1 1 1 1
+/Tissue/Tissue_state.translation = 50 0 0
+
+--- NEW SESSION: 15/06/2024 16:52:18 ---
+/URDFNode/visual.material = Default Diffuse 1 0.74902 0.74902 0.74902 1 Ambient 1 0.2 0.2 0.2 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 
+/URDFNode/visual.rotation = 50 0 0
+/URDFNode/visual.material = Default Diffuse 1 0.74902 0.74902 0.74902 1 Ambient 1 0.2 0.2 0.2 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 
+/URDFNode/visual.rotation = 50 0 0
+/URDFNode/visual.material = Default Diffuse 1 0.74902 0.74902 0.74902 1 Ambient 1 0.2 0.2 0.2 1 Specular 0 1 1 1 1 Emissive 0 0 0 0 0 Shininess 0 45 
+/URDFNode/visual.rotation = 50 0 0

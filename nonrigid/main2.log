@@ -1,0 +1,16 @@
+[2024-06-15 17:13:41,372][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-06-15 17:13:41,590][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-06-15 17:13:41,751][pybulletX.gui.control_panel][INFO] - name: base_126516967711168_x, low: -0.04, high: 0.005, init_value: -0.015
+[2024-06-15 17:13:41,756][pybulletX.gui.control_panel][INFO] - name: base_126516967711168_y, low: -0.02, high: 0.02, init_value: 0.0
+[2024-06-15 17:13:41,763][pybulletX.gui.control_panel][INFO] - name: base_126516967711168_z, low: 0.02, high: 0.03, init_value: 0.04
+[2024-06-15 17:13:41,770][pybulletX.gui.control_panel][INFO] - name: base_126516967711168_euler_x, low: -3.141592653589793, high: 3.141592653589793, init_value: 0.0
+[2024-06-15 17:13:41,776][pybulletX.gui.control_panel][INFO] - name: base_126516967711168_euler_y, low: -3.141592653589793, high: 3.141592653589793, init_value: -0.0
+[2024-06-15 17:13:41,783][pybulletX.gui.control_panel][INFO] - name: base_126516967711168_euler_z, low: -3.141592653589793, high: 3.141592653589793, init_value: 0.0
+[2024-06-15 17:32:24,754][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-06-15 17:32:25,083][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-06-15 17:32:25,316][pybulletX.gui.control_panel][INFO] - name: base_139784549962944_x, low: -0.04, high: 0.005, init_value: -0.015
+[2024-06-15 17:32:25,317][pybulletX.gui.control_panel][INFO] - name: base_139784549962944_y, low: -0.02, high: 0.02, init_value: 0.0
+[2024-06-15 17:32:25,328][pybulletX.gui.control_panel][INFO] - name: base_139784549962944_z, low: 0.02, high: 0.03, init_value: 0.04
+[2024-06-15 17:32:25,331][pybulletX.gui.control_panel][INFO] - name: base_139784549962944_euler_x, low: -3.141592653589793, high: 3.141592653589793, init_value: 0.0
+[2024-06-15 17:32:25,338][pybulletX.gui.control_panel][INFO] - name: base_139784549962944_euler_y, low: -3.141592653589793, high: 3.141592653589793, init_value: -0.0
+[2024-06-15 17:32:25,345][pybulletX.gui.control_panel][INFO] - name: base_139784549962944_euler_z, low: -3.141592653589793, high: 3.141592653589793, init_value: 0.0

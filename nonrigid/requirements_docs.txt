@@ -1,0 +1,4 @@
+-r requirements.txt
+fake-bpy-module-2.90
+sphinx>=4.4.0
+sphinx-rtd-theme>=1.0.0
