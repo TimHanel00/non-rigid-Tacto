@@ -4,21 +4,25 @@ Group Project for Robot Learning at TU Dresden -- aim is to extend the tacto tac
 ## Tacto usage:
 ubuntu 22.04
 
-	cd $repository_location
+	cd $REPO
 	chmod +x dependency_solve.sh
 	conda create -n "new_environment"
 	conda activate "new_environment"
 	./dependency_solve.sh $PathToYourAnaconda3/envs/"new_environment"
 
 mayby comment out pip install -r requirements/dev.txt if necessary
-
-
+###Test Tacto
+	cd $REPO
+	cd tacto/examples
+	python3 demo_pybullet_digit.py
 ## Non-rigid-Data Pipeline 
+This pipeline is used to create the soft tissue characteristics of organs the are usable in the sofa environment https://gitlab.com/nct_tso_public/nonrigid-data-generation-pipeline
+#### install packages
 	cd $REPO
 	cd nonrigid
 	pip install -r requirements.txt
 	conda install libboost
-https://gitlab.com/nct_tso_public/nonrigid-data-generation-pipeline
+
 
 ### build VascuSynth
 
@@ -39,18 +43,20 @@ https://gitlab.com/nct_tso_public/nonrigid-data-generation-pipeline
 	export PATH="$yourBlenderlocation/blender-3.4.1-linux-x64:$PATH"
 
 ### Setup Sofa:
-	download zip from here:
-	https://github.com/sofa-framework/sofa/releases/tag/v22.12.00
-	depackage in $sofaLocation (replace with your own location)
+download zip from here:
+https://github.com/sofa-framework/sofa/releases/tag/v22.12.00
+depackage in $sofaLocation (replace with your own location)
+#### export Paths
 	export SOFA_ROOT="$sofaLocation/SOFA_v22.12.00_Linux"
 	export PYTHONPATH=$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$PYTHONPATH
 ### Test nonrigid:
 	cd $REPO
 	cd nonrigid
 	python3 src/run_nonrigid_displacement.py --data_path data/sample_data --launch_sofa_gui --show_full_errors --num_samples 1
-If succesfull the sofa environment should open automatically, if the Pipeline only had partial success delete the nonridig/data folder
+If successfull the sofa environment should open automatically, if the Pipeline only had partial success delete the nonridig/data folder
 ### Setup STLIB:
-Stlib is a plugin for Sofa that has to be manually installed from https://github.com/SofaDefrost/STLIB but runnning
+Stlib is a plugin for Sofa that has to be manually installed from https://github.com/SofaDefrost/STLIB it can be done automatically
+#### via Skript:
 	cd $REPO
 	./stlibInstall.sh
 #### Export Path
@@ -79,6 +85,4 @@ It is highly recommended to put all of the paths in your ~/.bashrc (obviously re
 
     
 
-Important Paper:
-
-	https://arxiv.org/pdf/2402.01181
+Important Paper: https://arxiv.org/pdf/2402.01181
