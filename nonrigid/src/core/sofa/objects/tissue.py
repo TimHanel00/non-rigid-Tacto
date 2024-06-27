@@ -1,4 +1,6 @@
 import numpy as np
+import os
+import vtk
 from vtk import vtkDataSet
 from vtk.util import numpy_support
 from typing import Optional
@@ -11,6 +13,32 @@ from core.sofa.components.forcefield import Material, add_forcefield
 from utils.sofautils import get_bbox, check_valid_displacement, get_distance_np
 from utils.vtkutils import has_tetra
 from core.log import Log
+def read_mesh_file(location):
+    location=os.path.join(os.getcwd(),location)
+    """
+    Reads a mesh file and returns a vtkUnstructuredGrid object.
+    
+    :param location: String representing the file path of the mesh file.
+    :return: vtkUnstructuredGrid object containing the mesh data.
+    """
+    # Create a reader based on the file extension
+    if location.endswith('.vtk'):
+        reader = vtk.vtkUnstructuredGridReader()
+    elif location.endswith('.vtu'):
+        reader = vtk.vtkXMLUnstructuredGridReader()
+    else:
+        raise ValueError(f"Unsupported file format for '{location}'. Only .vtk and .vtu files are supported.")
+
+    # Set the file name
+    reader.SetFileName(location)
+
+    # Read the file
+    reader.Update()
+
+    # Get the output data object
+    output = reader.GetOutput()
+
+    return output
 
 class Tissue(Sofa.Core.Controller):
     """
@@ -23,8 +51,8 @@ class Tissue(Sofa.Core.Controller):
     def __init__(
                 self, 
                 parent_node: Sofa.Core.Node, 
-                simulation_mesh: vtkDataSet,
-                simulation_mesh_filename: str,
+                simulation_mesh: Optional[vtkDataSet]=None,
+                simulation_mesh_filename: str ="",
                 material: Optional[Material] = Material(),
                 node_name: str = "Tissue",
                 surface_mesh: Optional[str] = None,
@@ -64,7 +92,11 @@ class Tissue(Sofa.Core.Controller):
             collision_spheres_radius: .
             view: .        
         """
-
+        if simulation_mesh_filename=="":
+            print("Error no simulation mesh defined")
+            return
+        else:
+            simulation_mesh=read_mesh_file(simulation_mesh_filename)
         super().__init__(self)
         self.is_stable	  = True
         self.is_moving    = False
@@ -80,7 +112,7 @@ class Tissue(Sofa.Core.Controller):
         # --------------------------------------------------#
         tissue_node = parent_node.addChild(node_name)
         self.node = tissue_node
-
+        parent_node.addObject("MeshSTLLoader",name="meshLoaderFine",filename="mesh/surface_A.stl")
         # Get mesh bounding box
         xmin, xmax, ymin, ymax, zmin, zmax = get_bbox( simulation_mesh.GetPoints().GetData() )
         self.bounding_box = [xmin, ymin, zmin, xmax, ymax, zmax]
@@ -89,14 +121,14 @@ class Tissue(Sofa.Core.Controller):
         if has_tetra(simulation_mesh):
             Log.log(module="Sofa", msg="Tissue FEM will have tetrahedral topology")
             topology_type = Topology.TETRAHEDRON
-            topology_loader = add_loader( parent_node=tissue_node,
+            topology_loader = add_loader( parent_node=self.node,
                                          filename = simulation_mesh_filename,
                                          name = f"{node_name}_loader" 	
                                          )
         else:
             Log.log(module="Sofa", msg="Tissue FEM will have hexahedral topology")
             topology_type = Topology.HEXAHEDRON
-            topology_loader = tissue_node.addObject('RegularGridTopology', 
+            topology_loader = self.node.addObject('RegularGridTopology', 
                                                     name=f"{node_name}_grid_topology", 
                                                     min=self.bounding_box[:3],
                                                     max=self.bounding_box[3:],
@@ -106,34 +138,36 @@ class Tissue(Sofa.Core.Controller):
                 surface_mesh = simulation_mesh		
         
         # Topology
-        self.volume_topology = add_topology( parent_node=tissue_node,
+        self.volume_topology = add_topology( parent_node=self.node,
                                             mesh_loader=topology_loader,
                                             topology=topology_type,
                                             name=f"{node_name}_topology"
                                             )
 
         # Mechanical object
-        self.state = tissue_node.addObject('MechanicalObject', 
+        self.state = self.node.addObject('MechanicalObject', 
                                             src=self.volume_topology.getLinkPath(), 
-                                            name=f"{node_name}_state", 
+                                            name="MechanicalObject_state", 
+                                            template="Vec3d",
                                             showObject=False
                                             )
-        self.fem = add_forcefield( parent_node=tissue_node,
+        self.fem = add_forcefield( parent_node=self.node,
                                     material=material,
                                     topology=topology_type,
                                     topology_link = self.volume_topology.getLinkPath(),
                                     use_caribou=use_caribou,
                                     ) 
-        tissue_node.addObject('UniformMass', 
+        self.node.addObject('UniformMass', 
                                 totalMass=0.1, 
                                 name='mass'
                                 )	
-        
+        self.node.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
+        #self.node.addObject('LinearSolverConstraintCorrection')
         # Force field
             
 
         # Solver
-        add_solver( parent_node=tissue_node, 
+        add_solver( parent_node=self.node, 
                     analysis_type=analysis, 
                     solver_type=solver, 
                     solver_name="Solver",
@@ -144,31 +178,35 @@ class Tissue(Sofa.Core.Controller):
         # Surface mesh
         if surface_mesh is not None:
             surface_node_name = f"{node_name}Surface"
-            surface_node = tissue_node.addChild(surface_node_name)
+            surface_node = self.node.addChild(surface_node_name)
             self.surface_node=surface_node
             self.surface_node = surface_node
 
-            self.surface_mesh_loader = add_loader( parent_node=parent_node,
-                                                    filename = surface_mesh,
-                                                    name = f"{surface_node_name}_loader" 	
-                                                    )
-            add_mapping(parent_node=surface_node, mapping_type=MappingType.BARYCENTRIC)
-            visual=liver.addChild("Visual")
-            self.surface_node.addObject("OglModel",name="VisualModel",src="@../../meshLoaderFine")
-            visual.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalModel", output="@VisualModel")
+            #self.surface_mesh_loader = add_loader( parent_node=parent_node,
+                                                    #filename = surface_mesh,
+                                                    #name = f"{surface_node_name}_loader" 	
+                                                    #)
+            #add_mapping(parent_node=surface_node, mapping_type=MappingType.BARYCENTRIC)
+            visual=tissue_node.addChild("Visual")
+            visual.addObject("OglModel",name="VisualModel",src="@../../meshLoaderFine")
+            visual.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalObject_state", output="@VisualModel")
             # Visualization
-            if view:
-                self.visualize_surface(f"{surface_node_name}_loader")
+            #if view:
+                #self.visualize_surface(f"{surface_node_name}_loader")
         
             if collision:
                 #tissue_node.addObject('PrecomputedConstraintCorrection') #, recompute=1)
                 #tissue_node.addObject('TriangleCollisionModel', moving=1, simulated=1, contactStiffness=contact_stiffness, color=[0.56,0.56,0.56,0])
-                collisionNode=tissue_node.addChild("Collision")
-                collisionNode.addObject("Mesh",src="@../surface_node_name/"+f"{surface_node_name}_loader")
-                collisionNode.addObject("MechanicalObject",name="StoringForces",scale=1.0)
-                collisionNode.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
-                collisionNode.addObject("BarycentricMapping",name="CollisionMapping",input="@../", output="@StoringForces")
-
+                #collision=tissue_node.addChild("Collision")
+                #collision.addObject("Mesh",src="@../../meshLoaderFine")
+                #collision.addObject("MechanicalObject",name="StoringForces",scale=1.0)
+                #collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
+                #collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../MechanicalObject_state", output="@StoringForces")
+                collision=self.node.addChild("Collision")
+                collision.addObject("Mesh",src="@../../meshLoaderFine")
+                collision.addObject("MechanicalObject",template="Vec3d",name="StoringForces",scale=1.0)
+                collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
+                collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../MechanicalObject_state", output="@StoringForces")
 
                 print(" added collision models")
     def mapping(self):
@@ -181,6 +219,8 @@ class Tissue(Sofa.Core.Controller):
 
     def onAnimateEndEvent(self, __):
         # Check for simulation instability at the end of each time step
+        
+        print(type(self.state.position))
         current_pos = np.asarray(self.state.position.value)
         displ = current_pos - self.previous_pos
         self.previous_pos = current_pos
@@ -210,5 +250,6 @@ class Tissue(Sofa.Core.Controller):
         for i in indices:
             with self.state.position.writeable() as positions:
                 positions[i] = self.state.rest_position.value[i]
+
         
 

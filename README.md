@@ -74,7 +74,9 @@ It is highly recommended to put all of the path exports in your ~/.bashrc (obvio
 	export SOFA_ROOT="$sofaLocation/SOFA_v22.12.00_Linux"
 	export PYTHONPATH=$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$PYTHONPATH
 	export PYTHONPATH=$REPO/stlib/build/lib/python3/site-packages:$PYTHONPATH
+	export PYTHONPATH=$REPO/robot_learning/nonrigid/src:$PYTHONPATH
 ## Trivia
+	https://sofapython3.readthedocs.io/en/latest/content/modules/Sofa/generated/Sofa.Core/classes/Sofa.Core.DataContainer.html
 	Sofa can also be installed directly in anaconda via https://github.com/sofa-framework/conda-ci
 	conda install libboost=1.84.0 --channel conda-forge
 	conda install python=3.12.3
