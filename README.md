@@ -11,7 +11,7 @@ ubuntu 22.04
 	./dependency_solve.sh $PathToYourAnaconda3/envs/"new_environment"
 
 mayby comment out pip install -r requirements/dev.txt if necessary
-###Test Tacto
+### Test Tacto
 	cd $REPO
 	cd tacto/examples
 	python3 demo_pybullet_digit.py
