@@ -48,18 +48,24 @@ class SofaSimulation(Sofa.Core.Controller):
         self.surface_filename         = os.path.join(os.getcwd(), sample.path, inputs[1])
 
         # Load simulation mesh in vtk format
+        print(f'first meshfile: {inputs[0]}')
+        print(f'second meshfile: {inputs[1]}')
         undeformed_simulation_mesh = list(sample.read_all(inputs[0]))
+        print(f'undeformed mesh: {undeformed_simulation_mesh}')
+        print(f'undeformed meshType: {type(undeformed_simulation_mesh)}')
         assert len(undeformed_simulation_mesh) > 0, f"File {inputs[0]} not found!"
         assert len(undeformed_simulation_mesh) <= 1, f"Expected one file matching {inputs[0]}, " \
                                                      f"found {len(undeformed_simulation_mesh)}"
         self.undeformed_simulation_mesh = undeformed_simulation_mesh[0][1]
+        print(f'undeformed mesh: {self.undeformed_simulation_mesh}')
+        print(f'undeformed meshType: {type(self.undeformed_simulation_mesh)}')
         assert self.undeformed_simulation_mesh.GetNumberOfPoints() > 0, f"{inputs[0]} is empty!"
         
         root.animate = True
 
         self.tissue = None
         self.root = root
-
+        
         add_scene_header( 
                         root,
                         gravity = gravity,
@@ -82,33 +88,38 @@ class SofaSimulation(Sofa.Core.Controller):
 
         # Create deformable organs
         organs = [so for so in sample.scene_objects if isinstance(so, DeformableOrgan)]
-        if len(organs):
+        if len(organs): 
             for org in organs:
-                material = Material(
-                                    young_modulus = org.young_modulus,
-                                    poisson_ratio = org.poisson_ratio,
-                                    constitutive_model = ConstitutiveModel.COROTATED,
-                                    mass_density = org.mass_density
-                                )
+                    print(org.young_modulus)
+                    print(org.poisson_ratio)
+                    print(org.mass_density)
+                    print(self.undeformed_simulation_mesh)
+                    print(f' surface file: {self.surface_filename}')
+                    material = Material(
+                                        young_modulus = org.young_modulus,
+                                        poisson_ratio = org.poisson_ratio,
+                                        constitutive_model = ConstitutiveModel.COROTATED,
+                                        mass_density = org.mass_density
+                                    )
 
-                tissue = root.addObject( 
-                                        Tissue(
-                                            root,
-                                            simulation_mesh=self.undeformed_simulation_mesh,
-                                            simulation_mesh_filename=self.simulation_mesh_filename,
-                                            material=material,
-                                            node_name='Tissue',
-                                            #grid_resolution=[8,2,6], # for simulation with hexa
-                                            solver=SolverType.CG,
-                                            analysis=TimeIntegrationType.EULER,
-                                            surface_mesh=self.surface_filename, # e.g. surface for visualization or collision
-                                            view=False,
-                                            collision=False,
-                                            )
-                                        )					
-                self.tissue = tissue
+                    tissue = root.addObject( 
+                                            Tissue(
+                                                root,
+                                                simulation_mesh=self.undeformed_simulation_mesh,
+                                                simulation_mesh_filename=self.simulation_mesh_filename,
+                                                material=material,
+                                                node_name='Tissue',
+                                                #grid_resolution=[8,2,6], # for simulation with hexa
+                                                solver=SolverType.CG,
+                                                analysis=TimeIntegrationType.EULER,
+                                                surface_mesh=self.surface_filename, # e.g. surface for visualization or collision
+                                                view=True,
+                                                collision=True,
+                                                )
+                                            )					
+                    self.tissue = tissue
 
-                assert len(self.tissue.volume_topology.position.value) > 0, "Volume topology has NOT been correctly initialized"
+                    assert len(self.tissue.volume_topology.position.value) > 0, "Volume topology has NOT been correctly initialized"
         else:
             raise ValueError("Need exactly one DeformableOrgan in the scene!")
         #print(f"Tissue has {len(self.tissue.volume_topology.position.value)} DOFs")

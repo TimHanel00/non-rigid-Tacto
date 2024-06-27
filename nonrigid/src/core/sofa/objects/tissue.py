@@ -38,8 +38,10 @@ class Tissue(Sofa.Core.Controller):
                 collision_lines: bool 	  = True,
                 collision_points: bool 	  = True,
                 collision_spheres: bool   = False,
+                mechanical: bool =True,
                 collision_spheres_radius: float = 0.005,
                 view: bool = False,
+                
     ):
         """ 
         Args:
@@ -64,10 +66,9 @@ class Tissue(Sofa.Core.Controller):
         """
 
         super().__init__(self)
-
         self.is_stable	  = True
         self.is_moving    = False
-        
+        self.surface_node=None
         # Check on caribou
         if use_caribou:
             # TODO check if caribou libraries are there. If not, use default components setting use_caribou to false
@@ -117,26 +118,26 @@ class Tissue(Sofa.Core.Controller):
                                             name=f"{node_name}_state", 
                                             showObject=False
                                             )
-
-        tissue_node.addObject('UniformMass', 
-                                totalMass=0.1, 
-                                name='mass'
-                                )		
-        
-        # Force field
         self.fem = add_forcefield( parent_node=tissue_node,
                                     material=material,
                                     topology=topology_type,
                                     topology_link = self.volume_topology.getLinkPath(),
                                     use_caribou=use_caribou,
                                     ) 
+        tissue_node.addObject('UniformMass', 
+                                totalMass=0.1, 
+                                name='mass'
+                                )	
+        
+        # Force field
+            
 
         # Solver
         add_solver( parent_node=tissue_node, 
                     analysis_type=analysis, 
                     solver_type=solver, 
                     solver_name="Solver",
-                    add_constraint_correction=collision,
+                    add_constraint_correction=False,##used to be based on collision or nah but leads to error
                     constraint_correction=ConstraintCorrectionType.PRECOMPUTED #PRECOMPUTED, #UNCOUPLED
                     )
 
@@ -144,41 +145,34 @@ class Tissue(Sofa.Core.Controller):
         if surface_mesh is not None:
             surface_node_name = f"{node_name}Surface"
             surface_node = tissue_node.addChild(surface_node_name)
+            self.surface_node=surface_node
             self.surface_node = surface_node
 
-            self.surface_mesh_loader = add_loader( parent_node=surface_node,
+            self.surface_mesh_loader = add_loader( parent_node=parent_node,
                                                     filename = surface_mesh,
                                                     name = f"{surface_node_name}_loader" 	
                                                     )
-            add_topology( parent_node=surface_node,
-                            mesh_loader=self.surface_mesh_loader,
-                            topology=Topology.TRIANGLE,
-                            name=f"{surface_node_name}_topology"
-                            )
-
-            self.surface_state = surface_node.addObject('MechanicalObject', 
-                                                        src=self.surface_mesh_loader.getLinkPath(), 
-                                                        name=f"{surface_node_name}__state", 
-                                                        showObject=False)
-
+            add_mapping(parent_node=surface_node, mapping_type=MappingType.BARYCENTRIC)
+            visual=liver.addChild("Visual")
+            self.surface_node.addObject("OglModel",name="VisualModel",src="@../../meshLoaderFine")
+            visual.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalModel", output="@VisualModel")
             # Visualization
             if view:
-                self.visualize_surface()
+                self.visualize_surface(f"{surface_node_name}_loader")
         
             if collision:
                 #tissue_node.addObject('PrecomputedConstraintCorrection') #, recompute=1)
-                
-                add_collision_models(parent_node=surface_node,
-                                        contact_stiffness=contact_stiffness,
-                                        triangles=collision_triangles,
-                                        lines=collision_lines,
-                                        points=collision_points,
-                                        spheres=collision_spheres,
-                                        radius=collision_spheres_radius
-                                        )
+                #tissue_node.addObject('TriangleCollisionModel', moving=1, simulated=1, contactStiffness=contact_stiffness, color=[0.56,0.56,0.56,0])
+                collisionNode=tissue_node.addChild("Collision")
+                collisionNode.addObject("Mesh",src="@../surface_node_name/"+f"{surface_node_name}_loader")
+                collisionNode.addObject("MechanicalObject",name="StoringForces",scale=1.0)
+                collisionNode.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
+                collisionNode.addObject("BarycentricMapping",name="CollisionMapping",input="@../", output="@StoringForces")
 
-            add_mapping(parent_node=surface_node, mapping_type=MappingType.BARYCENTRIC)
 
+                print(" added collision models")
+    def mapping(self):
+        add_mapping(parent_node=self.surface_node, mapping_type=MappingType.BARYCENTRIC)
     #########################################################
     ####### SOFA-RELATED
     #########################################################
@@ -201,9 +195,8 @@ class Tissue(Sofa.Core.Controller):
     ####### CUSTOM
     #########################################################
     def visualize_surface( self, color=[1, 1, 0.5, 1] ):
-        visual_node = self.surface_node.addChild('VisualSurface')
-        visual_node.addObject('OglModel', name="VisualSurfaceOGL", src=self.surface_mesh_loader.getLinkPath(), color=color, listening=1)
-        visual_node.addObject('IdentityMapping')
+        self.surface_node.addObject('OglModel', name="VisualSurfaceOGL", src=self.surface_mesh_loader.getLinkPath(), color=color, listening=1)
+        self.surface_node.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalModel", output="@VisualModel")
 
     def compute_spherical_roi( self, center_position, radius ):
         if isinstance(center_position, list):
