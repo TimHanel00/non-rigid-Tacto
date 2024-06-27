@@ -46,7 +46,7 @@ This pipeline is used to create the soft tissue characteristics of organs the ar
 download zip from here:
 https://github.com/sofa-framework/sofa/releases/tag/v22.12.00
 depackage in $sofaLocation (replace with your own location)
-#### export Paths
+#### Export Paths
 	export SOFA_ROOT="$sofaLocation/SOFA_v22.12.00_Linux"
 	export PYTHONPATH=$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$PYTHONPATH
 ### Test nonrigid:
@@ -67,7 +67,7 @@ Stlib is a plugin for Sofa that has to be manually installed from https://github
 This should also open up a sofa environment with a cube and a sphere added via STLIB
 
 ## Recommendations
-It is highly recommended to put all of the paths in your ~/.bashrc (obviously replace the variables except $SOFA_ROOT with your own directories):
+It is highly recommended to put all of the path exports in your ~/.bashrc (obviously replace the variables except $SOFA_ROOT with your own directories):
 #### Paths
 	export VASCUSYNTH_PATH=$REPO/vascu_synth/build/VascuSynth
 	export PATH=$yourBlenderlocation/blender-3.4.1-linux-x64:$PATH
