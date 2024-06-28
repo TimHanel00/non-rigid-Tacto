@@ -106,29 +106,19 @@ class TactoController(Sofa.Core.Controller):
         
         print(f'Angles before Rotate: {self.getAngles()}')
         #axis=[int(self.XYZ[0]),int(self.XYZ[1]),int(self.XYZ[2])]
-        print(f'Rotate by {10*self.scale} degree (10*scale)')
+        
+        val=10*self.scale
+        if val>180.0:
+            val=val%180
+            val=-180+val
+        print(f'Rotate by {val} degree (10*scale)')
         if self.key=='+':
-            self.transformWrapper.rotateAround(self.XYZ,self.degtoRad(10*self.scale))
+            self.transformWrapper.rotateAround(self.XYZ,self.degtoRad(val))
         if self.key=='-':
-            self.transformWrapper.rotateAround(self.XYZ,self.degtoRad(-10*self.scale))
+            self.transformWrapper.rotateAround(self.XYZ,self.degtoRad(val))
         print(f'Angles after Rotate: {self.getAngles()}')
         #Todo
         return
-    def setPosition(self, v,index=0, field="position"):
-        print(" APDWDPOKAWPDOK")
-        p = self.rigidobject.getData(field)
-        print("=====")
-        print(p.value)
-        if(not isinstance(v,list)):
-            v = list(v)
-        value = [list(float(y) for y in i) for i in p.value]
-        v = [float(i) for i in v]
-        print("----  "+str(v)+"  ----")
-        value[index] = v + value[index][3:]
-        print(value)
-        self.rigidobject.position = value
-        print(self.rigidobject.getData(field).value)
-        print("=====")
         #splib3.numerics.quat.createFromEuler()
     
 

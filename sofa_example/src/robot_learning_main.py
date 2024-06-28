@@ -48,7 +48,7 @@ def createScene(root):
                     )
     print(type(tissue))
     print(type(root))
-    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit.STL",parent=root))
+    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed.stl",parent=root))
 
     return root
 
