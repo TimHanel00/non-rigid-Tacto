@@ -19,7 +19,32 @@ import vtk
 
 vtkMesh=None
 material=None
+def createCollisionMesh(root):#Part2
+    #root.addObject('VisualStyle', displayFlags="showForceFields")
 
+    root.addObject("MeshGmshLoader",name="meshLoaderCoarse",scale=0.1,filename="mesh/liver.msh")
+    root.addObject("MeshObjLoader",name="meshLoaderFine",scale=0.1,filename="mesh/liver-smooth.obj")
+
+    liver=root.addChild("Liver")
+    liver.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
+    liver.addObject("CGLinearSolver", iterations=200, tolerance=1e-9,threshold=1e-9)
+    liver.addObject("TetrahedronSetTopologyContainer",name="topo",src="@../meshLoaderCoarse")
+    liver.addObject("TetrahedronSetGeometryAlgorithms",template="Vec3d",name="GeomAlgo")
+
+    liver.addObject("MechanicalObject",template="Vec3d",name="MechanicalModel")#container for degrees of freedom (position,rotation)
+    liver.addObject('TetrahedralCorotationalFEMForceField',name="FEM",method="large",youngModulus=4000,poissonRatio=0.4,computeGlobalMatrix=False)#compute elasticity of the object
+    liver.addObject("MeshMatrixMass",name="Mass",massDensity=1.0)
+    #liver.addObject("ConstantForceField",totalForce=[1.0,0.,0.])
+    #liver.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
+    visual=liver.addChild("Visual")
+    visual.addObject("OglModel",name="VisualModel",src="@../../meshLoaderFine")
+    visual.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalModel", output="@VisualModel")
+
+    collision=liver.addChild("Collision")
+    collision.addObject("Mesh",src="@../../meshLoaderFine")
+    collision.addObject("MechanicalObject",name="StoringForces",scale=1.0)
+    collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
+    collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../", output="@StoringForces")
 def createScene(root):
     SofaRootConfig.setupEnvironment(root)
     material=Material(
@@ -31,7 +56,7 @@ def createScene(root):
     
 
     #root.addObject('MeshObjLoader', name="LiverSurface", filename="mesh/liver-smooth.obj")
-    
+
     tissue = root.addObject(Tissue(
                         root,
                         simulation_mesh_filename="mesh/preop_volume.vtk",
@@ -46,7 +71,8 @@ def createScene(root):
                         collision=True,
                         )
                     )
-    print(type(tissue))
+    #print(type(tissue))
+    #createCollisionMesh(root)
     print(type(root))
     root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed.stl",parent=root))
 

@@ -4,8 +4,6 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 PathToYourAnacondaEnvDir="$1"
-conda install python=3.9
-conda install pip
 git submodule update --init --recursive
 cd tacto
 pip install -r requirements/examples.txt

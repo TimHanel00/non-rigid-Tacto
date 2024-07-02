@@ -38,7 +38,7 @@ class TactoController(Sofa.Core.Controller):
         self.node=self.parent.addChild(name)
         
         self.addBasics(self.node)
-        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[0, 2.0, 0, 0, 0, 0, 1])
+        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[1.0, 1.0, 0, 0, 0, 0, 1])
         self.node.addObject("UniformMass",totalMass=1)
         self.addVisuals(self.node)
         self.addCollision(self.node)
@@ -156,9 +156,9 @@ class TactoController(Sofa.Core.Controller):
         newSphere.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
         newSphere.addObject('CGLinearSolver', threshold='1e-09', tolerance='1e-09', iterations='200')
         MO = newSphere.addObject('MechanicalObject', position=[0, 1.5+0.5*self.iteration, 0, 0, 0, 0, 1], name=f'Particle-{self.iteration}', template='Rigid3d')
-        Mass = newSphere.addObject('UniformMass', totalMass=0.01)
+        Mass = newSphere.addObject('UniformMass', totalMass=0.001)
         Force = newSphere.addObject('ConstantForceField', name="CFF", totalForce=[0, -1, 0, 0, 0, 0] )
-        Sphere = newSphere.addObject('SphereCollisionModel', name="SCM", simulated=1,moving=1,radius=0.03,contactStiffness=10.0 )
+        Sphere = newSphere.addObject('SphereCollisionModel', name="SCM", simulated=1,moving=1,radius=0.02,contactStiffness=10.0 )
         self.iteration = self.iteration+1
         newSphere.init()
         

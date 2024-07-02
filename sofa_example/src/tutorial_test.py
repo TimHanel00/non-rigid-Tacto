@@ -3,6 +3,30 @@ from meshlib import mrmeshpy
 import Sofa
 import SofaRuntime
 import Sofa.Gui
+def surfModel(root):
+    root.addObject('MeshObjLoader', name="LiverSurface", filename="mesh/liver-smooth.obj")
+
+    liver = root.addChild('Liver')
+    liver.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
+    liver.addObject('CGLinearSolver', name="linear_solver", iterations=25, tolerance=1e-09, threshold=1e-09)
+    liver.addObject('MeshGmshLoader', name="meshLoader", filename="mesh/liver.msh")
+    liver.addObject('TetrahedronSetTopologyContainer', name="topo", src="@meshLoader")
+    liver.addObject('MechanicalObject', name="dofs", src="@meshLoader",showObject=True)
+    liver.addObject('TetrahedronSetGeometryAlgorithms', template="Vec3d", name="GeomAlgo")
+    liver.addObject('MeshMatrixMass', name="Mass", massDensity=1.0)
+    liver.addObject('TetrahedralCorotationalFEMForceField', template="Vec3d", name="FEM", method="large", poissonRatio=0.3, youngModulus=1000, computeGlobalMatrix=False)
+    liver.addObject('FixedConstraint', name="FixedConstraint", indices="1 3 50")
+
+    visu = liver.addChild('Visu')
+    visu.addObject('OglModel', name="VisualModel", src="@../../LiverSurface")
+    visu.addObject('BarycentricMapping', name="VisualMapping", input="@../dofs", output="@VisualModel")
+
+    surf = liver.addChild('Surf')
+    surf.addObject('SphereLoader', name="sphereLoader", filename="mesh/liver.sph")
+    surf.addObject('MechanicalObject', name="spheres", position="@sphereLoader.position")
+    surf.addObject('SphereCollisionModel', name="CollisionModel", listRadius="@sphereLoader.listRadius")
+    surf.addObject('BarycentricMapping', name="CollisionMapping", input="@../dofs", output="@spheres")
+
 def createCollisionMesh(root):#Part2
     #root.addObject('VisualStyle', displayFlags="showForceFields")
 
@@ -16,8 +40,10 @@ def createCollisionMesh(root):#Part2
     liver.addObject("TetrahedronSetGeometryAlgorithms",template="Vec3d",name="GeomAlgo")
 
     liver.addObject("MechanicalObject",template="Vec3d",name="MechanicalModel")#container for degrees of freedom (position,rotation)
-    liver.addObject('TetrahedralCorotationalFEMForceField',name="FEM",method="large",youngModulus=4000,poissonRatio=0.4,computeGlobalMatrix=False)#compute elasticity of the object
-    liver.addObject("MeshMatrixMass",name="Mass",massDensity=1.0)
+    liver.addObject('TetrahedralCorotationalFEMForceField',name="FEM",method="large",youngModulus=1000,poissonRatio=0.4,computeGlobalMatrix=True)#compute elasticity of the object
+    liver.addObject("MeshMatrixMass",name="Mass",massDensity=3.0)
+    liver.addObject('FixedConstraint', name="FixedConstraint", indices="1 3 50")
+    liver.addObject("ConstantForceField",totalForce=[100.0,0.,0.])
     #liver.addObject("ConstantForceField",totalForce=[1.0,0.,0.])
 
     visual=liver.addChild("Visual")
@@ -27,7 +53,7 @@ def createCollisionMesh(root):#Part2
     collision=liver.addChild("Collision")
     collision.addObject("Mesh",src="@../../meshLoaderFine")
     collision.addObject("MechanicalObject",name="StoringForces",scale=1.0)
-    collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
+    collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=3.0)
     collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../", output="@StoringForces")
 def createDeformableMesh(root):#Part2
     root.addObject('VisualStyle', displayFlags="showForceFields")
@@ -68,11 +94,12 @@ def createSphere(root):
     newSphere = root.addChild('FallingSphere-')
     newSphere.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
     newSphere.addObject('CGLinearSolver', threshold='1e-09', tolerance='1e-09', iterations='200')
-    MO = newSphere.addObject('MechanicalObject', showObject=True, position=[0, 10, 0, 0, 0, 0, 1], name=f'Particle-', template='Rigid3d')
-    Mass = newSphere.addObject('UniformMass', totalMass=1)
-    Force = newSphere.addObject('ConstantForceField', name="CFF", totalForce=[0, -1, 0, 0, 0, 0] )
-    Sphere = newSphere.addObject('SphereCollisionModel', name="SCM", simulated=1,moving=1,radius=1.0,contactStiffness=50.0 )
+    MO = newSphere.addObject('MechanicalObject', position=[0, 10.0, 0, 0, 0, 0, 1], scale=0.3,name=f'Particle-', template='Rigid3d')
+    Mass = newSphere.addObject('UniformMass', totalMass=1.0)
+    Force = newSphere.addObject('ConstantForceField', name="CFF", totalForce=[0, -1.,.0, 0, 0, 0, 0] )
+    Sphere = newSphere.addObject('SphereCollisionModel', name="SCM", simulated=1,moving=1,radius=1.0,contactStiffness=30.0)
 def createScene(root):
+    #surfModel(root)
     createCollisionMesh(root)
     createSphere(root)
 
@@ -81,7 +108,7 @@ def main():
 
     root = Sofa.Core.Node("root")
     
-    root.addObject('DefaultVisualManagerLoop')
+    #root.addObject('DefaultVisualManagerLoop')
     root.addObject('DefaultAnimationLoop')
     root.addObject("RequiredPlugin", pluginName=[    'Sofa.Component.Collision.Detection.Algorithm',
     'Sofa.Component.Collision.Detection.Intersection',
@@ -104,7 +131,7 @@ def main():
     root.addObject('VisualStyle', displayFlags="showCollisionModels showForceFields")
     root.addObject('CollisionPipeline', verbose=0,draw=0)
     root.addObject('BruteForceDetection', name="BruteForceBroadPhase")
-    root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.2,contactDistance=0.001)
+    root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.5,contactDistance=0.001)
     root.addObject('CollisionResponse', name="CollisionResponse", response="PenalityContactForceField")
     #root.addObject('DiscreteIntersection')
     #root.addObject("RequiredPlugin",pluginName="Sofa.Component.ODESolver.Forward Sofa.Component.LinearSolver.Iterative Sofa.Component.Mass Sofa.Component.MechanicalLoad" 

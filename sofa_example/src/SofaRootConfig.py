@@ -37,10 +37,10 @@ def setupEnvironment(root):
     root.addObject('VisualStyle', displayFlags="showCollisionModels showForceFields")
     root.addObject('CollisionPipeline', verbose=0,draw=0)
     root.addObject('BruteForceDetection', name="BruteForceBroadPhase")
-    root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.2,contactDistance=0.0001)
+    root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.01,contactDistance=0.0025)
     root.addObject('CollisionResponse', name="CollisionResponse", response="PenalityContactForceField")
     #root.addObject('DiscreteIntersection')
     #root.addObject("RequiredPlugin",pluginName="Sofa.Component.ODESolver.Forward Sofa.Component.LinearSolver.Iterative Sofa.Component.Mass Sofa.Component.MechanicalLoad" 
                    #+" Sofa.Component.IO.Mesh Sofa.Component.SolidMechanics.FEM.Elastic Sofa.GL.Component.Rendering3D")
     root.dt=0.01
-    root.gravity=[0.,0.,0.]
+    root.gravity=[0.,0.0,0.]

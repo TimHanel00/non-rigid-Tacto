@@ -8,7 +8,10 @@ ubuntu 22.04
 	chmod +x dependency_solve.sh
 	conda create -n "new_environment"
 	conda activate "new_environment"
+	conda install python=3.9
+	conda install pip
 	./dependency_solve.sh $PathToYourAnaconda3/envs/"new_environment"
+	
 
 mayby comment out pip install -r requirements/dev.txt if necessary
 ### Test Tacto
