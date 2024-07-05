@@ -1,6 +1,3 @@
-[submodule "tacto"]
-	path = tacto
-	url = https://github.com/facebookresearch/tacto.git
 [submodule "vascu_synth"]
 	path = vascu_synth
 	url = https://github.com/sziem/vascu_synth.git
