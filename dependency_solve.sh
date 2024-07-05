@@ -6,7 +6,9 @@ fi
 PathToYourAnacondaEnvDir="$1"
 git submodule update --init --recursive
 cd tacto
+
 pip install -r requirements/examples.txt
+pip install vtk
 pip install -e .
 pip install -r requirements/dev.txt
 
@@ -24,4 +26,5 @@ sed -i 's/np.float)/float)/g' $PathToYourAnacondaEnvDir/lib/python3.9/site-packa
 sed -i 's/np.float)/float)/g' ./tacto/renderer.py
 
 cd examples
+
 python demo_pybullet_digit.py

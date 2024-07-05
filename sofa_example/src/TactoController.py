@@ -25,12 +25,30 @@ class TactoController(Sofa.Core.Controller):
 
         collision.addObject('MeshTopology', src="@../../TactoMeshLoader")
         collision.addObject('MechanicalObject')
-
-        collision.addObject('TriangleCollisionModel')
+        node.addObject('FixedConstraint', name="FixedConstraint", indices="0")
+        collision.addObject('TriangleCollisionModel',contactStiffness=1.0)
         #collision.addObject('LineCollisionModel')
         #collision.addObject('PointCollisionModel')
         collision.addObject('RigidMapping')
-    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node):
+        return collision
+    def onAnimateEndEvent(self, __):
+        if(self.listener.getNumberOfContacts()!=0):
+            #print(self.listener.getNumberOfContacts())
+            #print(self.listener.getDistances())
+            for key in self.listener.getContactData():
+
+                print(key)
+
+        
+        """
+        contacts = self.collision.getObject('TriangleCollisionModel').getLastComputedResults()
+        for contact in contacts:
+                print("Contact between Mesh1 and Mesh2")
+                print("Contact point:", contact.point)
+                print("Contact normal:", contact.normal)
+                print("Contact penetration depth:", contact.depth)
+        """
+    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue:Sofa.Core.Node):
         Sofa.Core.Controller.__init__(self)
         self.iteration = 0
         self.parent=parent
@@ -38,14 +56,21 @@ class TactoController(Sofa.Core.Controller):
         self.node=self.parent.addChild(name)
         
         self.addBasics(self.node)
-        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[1.0, 1.0, 0, 0, 0, 0, 1])
+        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[0.0, 0.5, 0, 0, 0, 0, 1])
         self.node.addObject("UniformMass",totalMass=1)
         self.addVisuals(self.node)
-        self.addCollision(self.node)
+        self.collision=self.addCollision(self.node)
+        tissue.getChild("Collision").getObject("CollisionModel")
+
+        self.listener = self.node.addObject(
+            "ContactListener",
+            collisionModel1=tissue.getChild("Collision").getObject("CollisionModel").getLinkPath(),
+            collisionModel2=self.collision.getObject('TriangleCollisionModel').getLinkPath(),
+        )
         self.key=""
         self.XYZ=[1.0,0.0,0.0]
         self.scaleIncr=0.1
-        self.scale=1.0
+        self.scale=0.1
         self.transformWrapper=RigidDof(self.rigidobject)
         self.mode=0
         self.modeSelect=['Translate','Rotate','Scale']
@@ -115,7 +140,7 @@ class TactoController(Sofa.Core.Controller):
         if self.key=='+':
             self.transformWrapper.rotateAround(self.XYZ,self.degtoRad(val))
         if self.key=='-':
-            self.transformWrapper.rotateAround(self.XYZ,self.degtoRad(val))
+            self.transformWrapper.rotateAround(self.XYZ,self.degtoRad(-val))
         print(f'Angles after Rotate: {self.getAngles()}')
         #Todo
         return
