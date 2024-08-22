@@ -9,6 +9,7 @@ from core.sofa.components.forcefield import Material, ConstitutiveModel
 from core.sofa.components.solver import SolverType, TimeIntegrationType
 from TactoController import TactoController
 import SofaRootConfig
+from multiprocessing import Process
 #from core.sofa.components.solver import TimeIntegrationType, ConstraintCorrectionType, SolverType, add_solver
 from SofaRootConfig import Environment
 from stlib3.scene import MainHeader, ContactHeader
@@ -16,9 +17,13 @@ from stlib3.solver import DefaultSolver
 from stlib3.physics.rigid import Cube, Sphere, Floor
 from stlib3.physics.deformable import ElasticMaterialObject
 from splib3.numerics import RigidDof
+import tactoEnvironment
+import numpy as np
+#import tacto  # Import TACTO
+import vtk
+import hydra
 # Choose in your script to activate or not the GUI
 USE_GUI = True
-import vtk
 
 vtkMesh=None
 material=None
@@ -30,7 +35,7 @@ def createCollisionMesh(root):#Part2
 
     liver=root.addChild("Liver")
     liver.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
-    liver.addObject("CGLinearSolver", iterations=200, tolerance=1e-9,threshold=1e-9)
+    liver.addObject("CGLinearSolver", iterations=50, tolerance=1e-9,threshold=1e-9)
     liver.addObject("TetrahedronSetTopologyContainer",name="topo",src="@../meshLoaderCoarse")
     liver.addObject("TetrahedronSetGeometryAlgorithms",template="Vec3d",name="GeomAlgo")
 
@@ -73,14 +78,16 @@ class CollisionResponseHandler(Sofa.Core.Controller):
             'object2': obj2.getName(),
             'normalForce': normal_force
         })
+
+        #t.stop()
 def createScene(root):
     env=Environment(root)
     root.addObject(CollisionResponseHandler())
     material=Material(
-                                young_modulus = 25799.3899911763,
+                                young_modulus = 200000.0,
                                 poisson_ratio = 0.47273863208820904,
                                 constitutive_model = ConstitutiveModel.COROTATED,
-                                mass_density = 1.0
+                                mass_density = .2
                             )
     
 
@@ -98,23 +105,16 @@ def createScene(root):
                         surface_mesh="mesh/surface_A.stl", # e.g. surface for visualization or collision
                         view=True,
                         collision=True,
-                        stiffness=0.01
+                        contact_stiffness=1.0
                         )
                     )
     #print(type(tissue))
     #createCollisionMesh(root)
     print(type(root))
-    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed.stl",parent=root,tissue=tissue.node))
+    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_decimated.stl",parent=root,tissue=tissue.node))
 
     return root
-
-
-def main():
-    import SofaRuntime
-    import Sofa.Gui
-
-    root = Sofa.Core.Node("root")
-    createScene(root)
+def sofaSimLoop(root):
     Sofa.Simulation.init(root)
 
     if not USE_GUI:
@@ -126,6 +126,20 @@ def main():
         Sofa.Gui.GUIManager.SetDimension(1080, 1080)
         Sofa.Gui.GUIManager.MainLoop(root)
         Sofa.Gui.GUIManager.closeGUI()
+@hydra.main(config_path="../config", config_name="digit")
+def main(cfg):
+    import SofaRuntime
+    import Sofa.Gui
+
+    root = Sofa.Core.Node("root")
+    createScene(root)
+    sofaProc=Process(target=sofaSimLoop,args=(root,))
+    tactoProc=Process(target=tactoEnvironment.tactoLaunch,args=(cfg,))
+    tactoProc.start()
+    sofaProc.start()
+    sofaProc.join()
+    tactoProc.join()
+
 
 
 

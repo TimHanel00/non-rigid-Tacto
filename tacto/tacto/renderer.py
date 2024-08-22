@@ -487,10 +487,10 @@ class Renderer:
         self, camera_pos, camera_ori, normal_forces, object_poses,
     ):
         """
-            Adjust object pose with normal force feedback
-            The larger the normal force, the larger indentation
-            Currently linear adjustment from force to shift distance
-            It can be replaced by non-linear adjustment with calibration from real sensor
+        Adjust object pose with normal force feedback
+        The larger the normal force, the larger indentation
+        Currently linear adjustment from force to shift distance
+        It can be replaced by non-linear adjustment with calibration from real sensor
         """
         existing_obj_names = list(self.current_object_nodes.keys())
         for obj_name in existing_obj_names:
@@ -524,9 +524,8 @@ class Renderer:
 
                 direction = camera_pos - obj_pos
                 direction = direction / (np.sum(direction ** 2) ** 0.5 + 1e-6)
-                obj_pos_old=obj_pos
                 obj_pos = obj_pos + offset * self.max_deformation * direction
-            print(f'adjusted object {obj_name} from {obj_pos_old} to {obj_pos}')
+
             self.update_object_pose(obj_name, obj_pos, objOri)
 
     def _post_process(self, color, depth, camera_index, noise=True, calibration=True):
@@ -566,7 +565,7 @@ class Renderer:
                     camera_pos, camera_ori, normal_forces, object_poses,
                 )
 
-            color, depth = self.r.render(self.scene, flags=self.flags_render)#uses pyrender offscreen
+            color, depth = self.r.render(self.scene, flags=self.flags_render)
             color, depth = self._post_process(color, depth, i, noise, calibration)
 
             colors.append(color)

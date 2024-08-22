@@ -12,7 +12,7 @@ class TactoController(Sofa.Core.Controller):
     """
     def addBasics(self,node):
         node.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
-        node.addObject("CGLinearSolver", iterations=200, tolerance=1e-9,threshold=1e-9)
+        node.addObject("CGLinearSolver", iterations=50, tolerance=1e-6,threshold=1e-6)
         
         
         
@@ -35,29 +35,30 @@ class TactoController(Sofa.Core.Controller):
         if(self.listener.getNumberOfContacts()!=0):
             #print(self.listener.getNumberOfContacts())
             #print(self.listener.getDistances())
-            for key in self.listener.getContactData():
+            #for key in self.listener.getContactData():
 
-                print(key)
+                #print(key)
 
-        
-        """
-        contacts = self.collision.getObject('TriangleCollisionModel').getLastComputedResults()
-        for contact in contacts:
-                print("Contact between Mesh1 and Mesh2")
-                print("Contact point:", contact.point)
-                print("Contact normal:", contact.normal)
-                print("Contact penetration depth:", contact.depth)
-        """
-    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue:Sofa.Core.Node):
+            
+            """
+            contacts = self.collision.getObject('TriangleCollisionModel').getLastComputedResults()
+            for contact in contacts:
+                    print("Contact between Mesh1 and Mesh2")
+                    print("Contact point:", contact.point)
+                    print("Contact normal:", contact.normal)
+                    print("Contact penetration depth:", contact.depth)
+            """
+    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue:Sofa.Core.Node,stiffness=5.0):
         Sofa.Core.Controller.__init__(self)
         self.iteration = 0
         self.parent=parent
+        self.stiffness=stiffness
         self.parent.addObject("MeshSTLLoader",name="TactoMeshLoader",triangulate="true",filename=meshfile)
         self.node=self.parent.addChild(name)
         
         self.addBasics(self.node)
-        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[0.0, 0.5, 0, 0, 0, 0, 1])
-        self.node.addObject("UniformMass",totalMass=1)
+        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[0.0, 0.11, 0, 0, 0, 0, 1])
+        self.node.addObject("UniformMass",totalMass=1.0)
         self.addVisuals(self.node)
         self.collision=self.addCollision(self.node)
         tissue.getChild("Collision").getObject("CollisionModel")

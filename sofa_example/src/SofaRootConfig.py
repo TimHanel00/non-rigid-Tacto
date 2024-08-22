@@ -10,18 +10,6 @@ def retrieveContacts(event,root):
                     print("Contact point:", contact.contactPoints())
                     print("Contact normal:", contact.contactNormals())
                     print("Contact distance:", contact.contactDistances())
-class ContactRetrievalComponent(Sofa.Core.Controller):
-    def __init__(self, root, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.root = root
-
-    def onEndAnimationStep(self, event):
-        contacts = self.root.pipeline.contactInteractions
-        for contact in contacts:
-            print("Contact between Mesh1 and Mesh2")
-            print("Contact point:", contact.contactPoints())
-            print("Contact normal:", contact.contactNormals())
-            print("Contact distance:", contact.contactDistances())
 class Environment():
      
     def __init__(self,root:Sofa.Core.Node):
@@ -49,16 +37,15 @@ class Environment():
         'Sofa.Component.ODESolver.Forward'
         ])
         self.root.addObject('VisualStyle', displayFlags="showCollisionModels showForceFields")
-        self.root.addObject('CollisionPipeline', verbose=0,draw=0,depth=6)
+        self.root.addObject('CollisionPipeline', verbose=0,draw=0,depth=2)
         self.root.addObject('BruteForceDetection', name="BruteForceBroadPhase")
-        self.root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.01,contactDistance=0.0025)
+        self.root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.01,contactDistance=0.001)
         self.root.addObject('CollisionResponse', name="CollisionResponse", response="PenalityContactForceField")
         #root.addObject('DiscreteIntersection')
         #root.addObject("RequiredPlugin",pluginName="Sofa.Component.ODESolver.Forward Sofa.Component.LinearSolver.Iterative Sofa.Component.Mass Sofa.Component.MechanicalLoad" 
                     #+" Sofa.Component.IO.Mesh Sofa.Component.SolidMechanics.FEM.Elastic Sofa.GL.Component.Rendering3D")
         self.root.dt=0.01
         self.root.gravity=[0.,0.0,0.]
-        self.root.addObject(ContactRetrievalComponent(self.root))
 
 def Floor(parentNode, color=[0.5, 0.5, 0.5, 1.], rotation=[0., 0., 0.], translation=[0., 0., 0.]):
     floor = parentNode.addChild('Floor')

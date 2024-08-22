@@ -61,7 +61,8 @@ class Tissue(Sofa.Core.Controller):
                 solver: SolverType = SolverType.CG,
                 analysis: TimeIntegrationType = TimeIntegrationType.EULER,
                 collision: bool = False,
-                contact_stiffness: float = 10,
+                check_displacement : bool =False,
+                contact_stiffness: float = 10.0,
                 collision_triangles: bool = True,
                 collision_lines: bool 	  = True,
                 collision_points: bool 	  = True,
@@ -98,9 +99,11 @@ class Tissue(Sofa.Core.Controller):
         else:
             simulation_mesh=read_mesh_file(simulation_mesh_filename)
         super().__init__(self)
+        self.check_displacement=check_displacement
         self.is_stable	  = True
         self.is_moving    = False
         self.surface_node=None
+        self.stiffness=contact_stiffness
         # Check on caribou
         if use_caribou:
             # TODO check if caribou libraries are there. If not, use default components setting use_caribou to false
@@ -158,7 +161,7 @@ class Tissue(Sofa.Core.Controller):
                                     use_caribou=use_caribou,
                                     ) 
         self.node.addObject('UniformMass', 
-                                totalMass=0.1, 
+                                totalMass=1.0, 
                                 name='mass'
                                 )	
         self.node.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
@@ -167,13 +170,16 @@ class Tissue(Sofa.Core.Controller):
             
 
         # Solver
+        self.node.addObject('EulerImplicitSolver', name="cg_odesolver")
+        self.node.addObject("CGLinearSolver")
+        """
         add_solver( parent_node=self.node, 
                     analysis_type=analysis, 
                     solver_type=solver, 
                     solver_name="Solver",
                     add_constraint_correction=False,##used to be based on collision or nah but leads to error
                     constraint_correction=ConstraintCorrectionType.PRECOMPUTED #PRECOMPUTED, #UNCOUPLED
-                    )
+                    )"""
 
         # Surface mesh
         if surface_mesh is not None:
@@ -205,7 +211,7 @@ class Tissue(Sofa.Core.Controller):
                 collision=self.node.addChild("Collision")
                 collision.addObject("Mesh",src="@../../meshLoaderFine")
                 collision.addObject("MechanicalObject",template="Vec3d",name="StoringForces",scale=1.0)
-                collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
+                collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=self.stiffness)
                 collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../MechanicalObject_state", output="@StoringForces")
 
                 print(" added collision models")
@@ -219,13 +225,13 @@ class Tissue(Sofa.Core.Controller):
 
     def onAnimateEndEvent(self, __):
         # Check for simulation instability at the end of each time step
-        
-        print(type(self.state.position))
-        current_pos = np.asarray(self.state.position.value)
-        displ = current_pos - self.previous_pos
-        self.previous_pos = current_pos
+        if(self.check_displacement):
+            print(type(self.state.position))
+            current_pos = np.asarray(self.state.position.value)
+            displ = current_pos - self.previous_pos
+            self.previous_pos = current_pos
 
-        self.is_stable, self.is_moving = check_valid_displacement(displ, low_thresh=1e-01, high_thresh=0.4)		
+            self.is_stable, self.is_moving = check_valid_displacement(displ, low_thresh=1e-01, high_thresh=0.4)		
 
     def reset(self):
         with self.state.position.writeable() as positions:

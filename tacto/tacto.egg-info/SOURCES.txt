@@ -1,0 +1,16 @@
+LICENSE
+README.md
+setup.py
+tacto/__init__.py
+tacto/config_digit.yml
+tacto/config_omnitact.yml
+tacto/random_normal_generator.py
+tacto/renderer.py
+tacto/sensor.py
+tacto/timeit.py
+tacto.egg-info/PKG-INFO
+tacto.egg-info/SOURCES.txt
+tacto.egg-info/dependency_links.txt
+tacto.egg-info/not-zip-safe
+tacto.egg-info/requires.txt
+tacto.egg-info/top_level.txt

@@ -9,13 +9,16 @@ def surfModel(root):
     liver = root.addChild('Liver')
     liver.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
     liver.addObject('CGLinearSolver', name="linear_solver", iterations=25, tolerance=1e-09, threshold=1e-09)
+    
     liver.addObject('MeshGmshLoader', name="meshLoader", filename="mesh/liver.msh")
     liver.addObject('TetrahedronSetTopologyContainer', name="topo", src="@meshLoader")
+
     liver.addObject('MechanicalObject', name="dofs", src="@meshLoader",showObject=True)
-    liver.addObject('TetrahedronSetGeometryAlgorithms', template="Vec3d", name="GeomAlgo")
     liver.addObject('MeshMatrixMass', name="Mass", massDensity=1.0)
-    liver.addObject('TetrahedralCorotationalFEMForceField', template="Vec3d", name="FEM", method="large", poissonRatio=0.3, youngModulus=1000, computeGlobalMatrix=False)
-    liver.addObject('FixedConstraint', name="FixedConstraint", indices="1 3 50")
+
+    liver.addObject('TetrahedronSetGeometryAlgorithms', template="Vec3d", name="GeomAlgo")
+    liver.addObject('TetrahedralCorotationalFEMForceField', template="Vec3d", 
+                    name="FEM", method="large", poissonRatio=0.3, youngModulus=1000, computeGlobalMatrix=False)
 
     visu = liver.addChild('Visu')
     visu.addObject('OglModel', name="VisualModel", src="@../../LiverSurface")

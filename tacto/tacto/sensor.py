@@ -107,7 +107,6 @@ class Sensor:
         return self.renderer.background
 
     def add_camera(self, obj_id, link_ids):
-        print(f'add camera {obj_id} with link {link_ids}')
         """
         Add camera into tacto
 
@@ -235,7 +234,6 @@ class Sensor:
 
             # Accumulate normal forces
             self.normal_forces[cam_name][obj_name] += pt[9]
-            print(f' add: {self.normal_forces[cam_name][obj_name]} of force to {cam_name} and {obj_name}')
 
         return self.normal_forces[cam_name]
 
