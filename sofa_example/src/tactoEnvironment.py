@@ -10,6 +10,7 @@ import numpy as np
 import tacto
 import threading
 import logging
+from dataTransport import TransportData,DataReceiver
 log = logging.getLogger(__name__)
 def stlToPyrenderMesh(meshfile):
     stl_mesh = mesh.Mesh.from_file(meshfile)
@@ -21,14 +22,14 @@ def tactoLoop(digits):
     while True:
         color, depth = digits.render()
         digits.updateGUI(color, depth)
-def tactoLaunch(cfg):
-   
+def tactoLaunch(cfg,receiveConn):
+    dataReceive=DataReceiver(receiveConn)
     # Load the config YAML file from examples/conf/digit.yaml
 
         # Initialize digits
     bg = cv2.imread("conf/bg_digit_240_320.jpg")
     digits = tacto.Sensor(**cfg.tacto, background=bg)
-    
+    digits.setDataReceiver(dataReceive)
     # Initialize World
     log.info("Initializing world")
     px.init()
@@ -47,11 +48,11 @@ def tactoLaunch(cfg):
     panel = px.gui.PoseControlPanel(obj, **cfg.object_control_panel)
     panel.start()
     log.info("Use the slides to move the object until in contact with the DIGIT")
-
+    dataReceive.start()
     # run p.stepSimulation in another thread
     t = px.utils.SimulationThread(real_time_factor=1.0)
     t.start()
     thread = threading.Thread(target=tactoLoop, args=(digits,))
     thread.start()
     thread.join()
-
+    dataReceive.join()

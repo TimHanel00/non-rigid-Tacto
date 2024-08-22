@@ -32,7 +32,9 @@ class TactoController(Sofa.Core.Controller):
         collision.addObject('RigidMapping')
         return collision
     def onAnimateEndEvent(self, __):
+        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles())
         if(self.listener.getNumberOfContacts()!=0):
+            return
             #print(self.listener.getNumberOfContacts())
             #print(self.listener.getDistances())
             #for key in self.listener.getContactData():
@@ -48,10 +50,11 @@ class TactoController(Sofa.Core.Controller):
                     print("Contact normal:", contact.normal)
                     print("Contact penetration depth:", contact.depth)
             """
-    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue:Sofa.Core.Node,stiffness=5.0):
+    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue:Sofa.Core.Node,stiffness=5.0,senderD=None):
         Sofa.Core.Controller.__init__(self)
         self.iteration = 0
         self.parent=parent
+        self.dataSender=senderD
         self.stiffness=stiffness
         self.parent.addObject("MeshSTLLoader",name="TactoMeshLoader",triangulate="true",filename=meshfile)
         self.node=self.parent.addChild(name)

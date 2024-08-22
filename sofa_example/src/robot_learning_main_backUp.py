@@ -10,7 +10,6 @@ from core.sofa.components.solver import SolverType, TimeIntegrationType
 from TactoController import TactoController
 import SofaRootConfig
 from multiprocessing import Process, Pipe
-from threading import Thread
 #from core.sofa.components.solver import TimeIntegrationType, ConstraintCorrectionType, SolverType, add_solver
 from SofaRootConfig import Environment
 from stlib3.scene import MainHeader, ContactHeader
@@ -23,7 +22,6 @@ import numpy as np
 #import tacto  # Import TACTO
 import vtk
 import hydra
-from dataTransport import TransportData, Sender 
 # Choose in your script to activate or not the GUI
 USE_GUI = True
 
@@ -82,8 +80,7 @@ class CollisionResponseHandler(Sofa.Core.Controller):
         })
 
         #t.stop()
-
-def createScene(root,dataSend):
+def createScene(root):
     env=Environment(root)
     root.addObject(CollisionResponseHandler())
     material=Material(
@@ -114,17 +111,12 @@ def createScene(root,dataSend):
     #print(type(tissue))
     #createCollisionMesh(root)
     print(type(root))
-    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_decimated.stl",senderD=dataSend,parent=root,tissue=tissue.node))
+    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_decimated.stl",parent=root,tissue=tissue.node))
 
     return root
-def sofaSimLoop(root,sendConn):
-    
-    dataSend=Sender(sendConn)
-    createScene(root,dataSend)
-    dataSend.start()
+def sofaSimLoop(root):
     Sofa.Simulation.init(root)
-    send=Thread()
-    
+
     if not USE_GUI:
         for iteration in range(10):
             Sofa.Simulation.animate(root, root.dt.value)
@@ -134,18 +126,16 @@ def sofaSimLoop(root,sendConn):
         Sofa.Gui.GUIManager.SetDimension(1080, 1080)
         Sofa.Gui.GUIManager.MainLoop(root)
         Sofa.Gui.GUIManager.closeGUI()
-    dataSend.join()
 @hydra.main(config_path="../config", config_name="digit")
 def main(cfg):
     import SofaRuntime
     import Sofa.Gui
-    root = Sofa.Core.Node("root")
     parent_conn, child_conn = Pipe()
-
     
-    
-    sofaProc=Process(target=sofaSimLoop,args=(root,parent_conn,))
-    tactoProc=Process(target=tactoEnvironment.tactoLaunch,args=(cfg,child_conn,))
+    root = Sofa.Core.Node("root")
+    createScene(root)
+    sofaProc=Process(target=sofaSimLoop,args=(root,))
+    tactoProc=Process(target=tactoEnvironment.tactoLaunch,args=(cfg,))
     tactoProc.start()
     sofaProc.start()
     sofaProc.join()
