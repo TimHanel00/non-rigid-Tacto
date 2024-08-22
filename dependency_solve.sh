@@ -4,7 +4,7 @@ if [ "$#" -ne 1 ]; then
     exit 1
 fi
 PathToYourAnacondaEnvDir="$1"
-git submodule update --init --recursive
+#git submodule update --init --recursive
 cd tacto
 
 pip install -r requirements/examples.txt
@@ -15,14 +15,14 @@ pip install -r requirements/dev.txt
 
 
 
-sed -i 's/fractions/math/g' $PathToYourAnacondaEnvDir/lib/python3.9/site-packages/networkx/algorithms/dag.py
+sed -i 's/fractions/math/g' $PathToYourAnacondaEnvDir/lib/python3.8/site-packages/networkx/algorithms/dag.py
 
-sed -i 's/np.int,/int,/g' $PathToYourAnacondaEnvDir/lib/python3.9/site-packages/networkx/readwrite/graphml.py
+sed -i 's/np.int,/int,/g' $PathToYourAnacondaEnvDir/lib/python3.8/site-packages/networkx/readwrite/graphml.py
 
-sed -i 's/np.float,/float,/g' $PathToYourAnacondaEnvDir/lib/python3.9/site-packages/urdfpy/urdf.py
+sed -i 's/np.float,/float,/g' $PathToYourAnacondaEnvDir/lib/python3.8/site-packages/urdfpy/urdf.py
 
 
-sed -i 's/np.float)/float)/g' $PathToYourAnacondaEnvDir/lib/python3.9/site-packages/urdfpy/urdf.py
+sed -i 's/np.float)/float)/g' $PathToYourAnacondaEnvDir/lib/python3.8/site-packages/urdfpy/urdf.py
 sed -i 's/np.float)/float)/g' ./tacto/renderer.py
 
 cd examples

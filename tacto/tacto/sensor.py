@@ -42,7 +42,7 @@ class Link:
     link_id: int  # pybullet link ID (-1 means base)
     cid: int  # physicsClientId
 
-    def get_pose(self):
+    def get_pose(self,dataReceive):
         if self.link_id < 0:
             # get the base pose if link ID < 0
             position, orientation = p.getBasePositionAndOrientation(
@@ -55,6 +55,18 @@ class Link:
             )[:2]
 
         orientation = p.getEulerFromQuaternion(orientation, physicsClientId=self.cid)
+        #print(f'{self.link_id}+ obj Id: {self.obj_id}')
+        """
+        if( is digit sensor):
+        
+        
+        print(dataReceive.latest_data)
+        for i in range(3):
+            dataReceive.latest_data.position[i]*=10
+            
+                            
+        return dataReceive.latest_data.position,dataReceive.latest_data.orientation
+        """
         return position, orientation
 
 
@@ -69,6 +81,7 @@ class Sensor:
         show_depth=True,
         zrange=0.002,
         cid=0,
+        dataReceive=None
     ):
         """
 
@@ -86,7 +99,7 @@ class Sensor:
         self.visualize_gui = visualize_gui
         self.show_depth = show_depth
         self.zrange = zrange
-
+        self.dataReceiver=dataReceive
         self.cameras = {}
         self.nb_cam = 0
         self.objects = {}
@@ -105,7 +118,8 @@ class Sensor:
     @property
     def background(self):
         return self.renderer.background
-
+    def setDataReceiver(self,receiver):
+        self.dataReceiver=receiver
     def add_camera(self, obj_id, link_ids):
         """
         Add camera into tacto
@@ -161,7 +175,7 @@ class Sensor:
             obj_name = "{}_{}".format(obj_id, link_id)
 
             self.objects[obj_name] = Link(obj_id, link_id, self.cid)
-            position, orientation = self.objects[obj_name].get_pose()
+            position, orientation = self.objects[obj_name].get_pose(self.dataReceiver)
 
             # Add object in pyrender
             self.renderer.add_object(
@@ -207,7 +221,7 @@ class Sensor:
         Update the pose of each objects registered in tacto simulator
         """
         for obj_name in self.objects.keys():
-            self.object_poses[obj_name] = self.objects[obj_name].get_pose()
+            self.object_poses[obj_name] = self.objects[obj_name].get_pose(self.dataReceiver)
 
     def get_force(self, cam_name):
         # Load contact force
@@ -268,7 +282,7 @@ class Sensor:
             normal_forces = self.get_force(cam_name)
 
             if normal_forces:
-                position, orientation = self.cameras[cam_name].get_pose()
+                position, orientation = self.cameras[cam_name].get_pose(self.dataReceiver)
                 self.renderer.update_camera_pose(position, orientation)
                 color, depth = self.renderer.render(self.object_poses, normal_forces)
 
