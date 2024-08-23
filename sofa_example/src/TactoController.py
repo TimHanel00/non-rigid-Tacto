@@ -32,24 +32,11 @@ class TactoController(Sofa.Core.Controller):
         collision.addObject('RigidMapping')
         return collision
     def onAnimateEndEvent(self, __):
-        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles())
-        if(self.listener.getNumberOfContacts()!=0):
-            return
-            #print(self.listener.getNumberOfContacts())
-            #print(self.listener.getDistances())
-            #for key in self.listener.getContactData():
+        nr_contacts=self.listener.getNumberOfContacts()/50
+        if nr_contacts>100:
+            nr_contacts=100
+        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles(),nr_contacts)
 
-                #print(key)
-
-            
-            """
-            contacts = self.collision.getObject('TriangleCollisionModel').getLastComputedResults()
-            for contact in contacts:
-                    print("Contact between Mesh1 and Mesh2")
-                    print("Contact point:", contact.point)
-                    print("Contact normal:", contact.normal)
-                    print("Contact penetration depth:", contact.depth)
-            """
     def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue:Sofa.Core.Node,stiffness=5.0,senderD=None):
         Sofa.Core.Controller.__init__(self)
         self.iteration = 0
@@ -76,6 +63,7 @@ class TactoController(Sofa.Core.Controller):
         self.scaleIncr=0.1
         self.scale=0.1
         self.transformWrapper=RigidDof(self.rigidobject)
+        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles())
         self.mode=0
         self.modeSelect=['Translate','Rotate','Scale']
         self.ModeDict = {'Translate' : self.trans,

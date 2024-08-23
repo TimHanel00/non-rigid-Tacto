@@ -510,7 +510,6 @@ class Renderer:
                 node = self.object_nodes[obj_name]
                 self.scene.add_node(node)
                 self.current_object_nodes[obj_name] = node
-
             if self.force_enabled:
                 offset = -1.0
                 if obj_name in normal_forces:
@@ -536,7 +535,7 @@ class Renderer:
         return color, depth
 
     def render(
-        self, object_poses=None, normal_forces=None, noise=True, calibration=True
+        self, pos=None,orient=None,object_poses=None, normal_forces=None, noise=True, calibration=True
     ):
         """
 
@@ -546,7 +545,6 @@ class Renderer:
         :return:
         """
         colors, depths = [], []
-
         for i in range(self.nb_cam):
             # Set the main camera node for rendering
             self.scene.main_camera_node = self.camera_nodes[i]
@@ -557,10 +555,11 @@ class Renderer:
             # Adjust contact based on force
             if object_poses is not None and normal_forces is not None:
                 # Get camera pose for adjusting object pose
-                camera_pose = self.camera_nodes[i].matrix
-                camera_pos = camera_pose[:3, 3].T
-                camera_ori = R.from_matrix(camera_pose[:3, :3]).as_quat()
-
+                #camera_pose = self.camera_nodes[i].matrix
+                #camera_pos = camera_pose[:3, 3].T
+                #camera_ori = R.from_matrix(camera_pose[:3, :3]).as_quat()
+                camera_pos=pos
+                camera_ori=orient
                 self.adjust_with_force(
                     camera_pos, camera_ori, normal_forces, object_poses,
                 )

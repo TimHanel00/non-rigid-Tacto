@@ -2,17 +2,23 @@ import threading
 from multiprocessing import Pipe
 from time import sleep
 class TransportData:
-    def __init__(self, position=None, orientation=None, forces=None):
-        
-        self.position = position
-        self.orientation = orientation
-        self.normalForces = forces
+    def __init__(self, position=None, orientation=None, forces=None,tissuePos=None,tissueOr=None):
         if position is None:
             position = [0, 0, 0]
         if orientation is None:
             orientation = [0, 0, 0]
         if forces is None:
-            forces = [0, 0, 0]
+            forces = 0
+        if tissuePos is None:
+            tissuePos = [0, 0, 0]
+        if tissueOr is None:
+            tissueOr = [0, 0, 0]
+        self.position = position
+        self.orientation = orientation
+        self.tissuePos=tissuePos
+        self.tissueOr=tissueOr
+        self.normalForces = forces
+        
 
     def __repr__(self):
         return f"TransportData(position={self.position}, orientation={self.orientation}, forces={self.normalForces})"
@@ -21,7 +27,7 @@ class DataReceiver(threading.Thread):
     def __init__(self, conn):
         super().__init__()
         self.conn = conn
-        self.latest_data = None
+        self.latest_data = TransportData()
         self.running = True
 
     def run(self):
@@ -43,14 +49,15 @@ class Sender(threading.Thread):
         self.running = True
 
     def update(self, pos, orientation, forces=None):
-        self.curData = TransportData(pos, orientation, forces)
-
+        self.curData = TransportData(pos, orientation, forces,self.curData.tissuePos,self.curData.tissueOr)
+    def updateTissue(self, tissuePos,tissueOr):
+        self.curData = TransportData(self.curData.position, self.curData.orientation, self.curData.normalForces,tissuePos,tissueOr)
     def run(self):
         while self.running:
             if self.curData:
                 self.conn.send(self.curData)
                 #print(f"Sent: {self.curData}")
-                self.curData = None  # Reset after sending
+                  # Reset after sending
             sleep(0.01)  # Simulate some delay
 
     def stop(self):

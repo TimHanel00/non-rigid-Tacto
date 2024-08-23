@@ -35,13 +35,24 @@ def get_digit_shadow_config_path():
 def get_omnitact_config_path():
     return _get_default_config("config_omnitact.yml")
 
-
+def swap(l1,i,l2,j):
+    tmp=l1[i]
+    l1[i]=l2[j]
+    l2[j]=tmp
+def degtoRad(angle):
+    import math
+    return angle*math.pi/180
 @dataclass
 class Link:
     obj_id: int  # pybullet ID
     link_id: int  # pybullet link ID (-1 means base)
     cid: int  # physicsClientId
-
+    internalPos=None
+    internalRot=None
+    initSofaPos=None
+    lastSofaPos=None
+    lastSofaRot=None
+    force=None
     def get_pose(self,dataReceive):
         if self.link_id < 0:
             # get the base pose if link ID < 0
@@ -55,6 +66,9 @@ class Link:
             )[:2]
 
         orientation = p.getEulerFromQuaternion(orientation, physicsClientId=self.cid)
+        if self.internalPos==None and self.internalRot==None:
+            self.internalPos=position
+            self.internalRot=orientation
         #print(f'{self.link_id}+ obj Id: {self.obj_id}')
         """
         if( is digit sensor):
@@ -63,11 +77,59 @@ class Link:
         print(dataReceive.latest_data)
         for i in range(3):
             dataReceive.latest_data.position[i]*=10
+        """    
+        #print(dataReceive.get())
+        #print(position,orientation)
+        #return dataReceive.get().position,dataReceive.get().orientation
+        #print(str(position)+ " 1")
+        pos=None
+        orient=None
+        self.force=dataReceive.get().normalForces
+        if(self.link_id==-1 and self.obj_id==1):# sensor
             
-                            
-        return dataReceive.latest_data.position,dataReceive.latest_data.orientation
+            pos=dataReceive.get().position
+            
+            orient=[degtoRad(i) for i in dataReceive.get().orientation]
+        if(self.link_id==-1 and self.obj_id==2):# tissue
+            pos=dataReceive.get().tissuePos
+            if(self.initSofaPos is None  and round(pos[0],3)!=0):
+                self.initSofaPos=pos
+            if self.initSofaPos is not None:
+                pos=[y-x for x,y in zip(pos,self.initSofaPos)]
+            orient=[degtoRad(i) for i in dataReceive.get().tissueOr]
+        if self.lastSofaPos is None and pos is not None:
+            
+            self.lastSofaPos=pos
+            self.lastSofaRot=orient
+        dSofaPos=[-x+y for x,y in zip(self.lastSofaPos,pos)]
+        dSofaOr=[-x+y for x,y in zip(self.lastSofaRot,orient)]
+        position=[x+y for x,y in zip(position,dSofaPos)]
+        orientation=[x+y for x,y in zip(orientation,dSofaOr)]
+        pos=(pos[0],pos[1],pos[2]+2)
+        p.resetBasePositionAndOrientation(self.obj_id, pos, p.getQuaternionFromEuler(orient))
+        self.lastSofaRot=orient
+        self.lastSofaPos=pos
+        return pos,orient
         """
-        return position, orientation
+        pos=dataReceive.get().tissuePos
+        orient=dataReceive.get().tissueOr
+        if self.initSofaPos is None and pos is not None:
+            self.initSofaPos=pos
+            self.initSofaRot=orient
+        dSofaPos=[-x+y for x,y in zip(self.initSofaPos,pos)]
+        dSofaOr=[-x+y for x,y in zip(self.initSofaRot,pos)]
+        position=[x+y for x,y in zip(self.internalPos,dSofaPos)]
+        orientation=[x+y for x,y in zip(self.internalRot,dSofaOr)]
+        
+        p.resetBasePositionAndOrientation(self.obj_id, position, p.getQuaternionFromEuler(orientation))
+        self.lastSofaRot=orient
+        self.lastSofaPos=pos
+        return position,orientation
+        """
+        #print(str(position)+ " 2")
+        #orientation[2]+=0.01
+        #return position,orientation
+        #return position, orientation
 
 
 class Sensor:
@@ -228,13 +290,16 @@ class Sensor:
 
         obj_id = self.cameras[cam_name].obj_id
         link_id = self.cameras[cam_name].link_id
-
+        self.normal_forces[cam_name] = collections.defaultdict(float)
+        if self.cameras[cam_name].force!=None:
+            obj_name = "{}_{}".format(2, -1)
+            self.normal_forces[cam_name][obj_name]=float(self.cameras[cam_name].force)
+            return self.normal_forces[cam_name]
         pts = p.getContactPoints(
             bodyA=obj_id, linkIndexA=link_id, physicsClientId=self.cid
         )
 
         # accumulate forces from 0. using defaultdict of float
-        self.normal_forces[cam_name] = collections.defaultdict(float)
 
         for pt in pts:
             body_id_b = pt[2]
@@ -279,12 +344,13 @@ class Sensor:
             cam_name = "cam" + str(i)
 
             # get the contact normal forces
-            normal_forces = self.get_force(cam_name)
 
+            normal_forces = self.get_force(cam_name)
+            position, orientation = self.cameras[cam_name].get_pose(self.dataReceiver)
+            
+            self.renderer.update_camera_pose(position, orientation)
             if normal_forces:
-                position, orientation = self.cameras[cam_name].get_pose(self.dataReceiver)
-                self.renderer.update_camera_pose(position, orientation)
-                color, depth = self.renderer.render(self.object_poses, normal_forces)
+                color, depth = self.renderer.render(position,orientation,object_poses=self.object_poses, normal_forces=normal_forces)
 
                 # Remove the depth from curved gel
                 for j in range(len(depth)):
