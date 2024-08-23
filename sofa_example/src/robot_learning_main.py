@@ -108,7 +108,8 @@ def createScene(root,dataSend):
                         surface_mesh="mesh/surface_A.stl", # e.g. surface for visualization or collision
                         view=True,
                         collision=True,
-                        contact_stiffness=1.0
+                        contact_stiffness=1.0,
+                        senderD=dataSend
                         )
                     )
     #print(type(tissue))

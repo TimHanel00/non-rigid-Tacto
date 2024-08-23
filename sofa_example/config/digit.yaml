@@ -17,16 +17,16 @@ digit:
 
 object:
   urdf_path: "mesh/sphere_small.urdf"
-  base_position: [-0.015, 0, 0.04]
-  global_scaling: 0.15
-
+  base_position: [0, 0, 0]
+  global_scaling: 1.0
+  use_fixed_base: True
 object_control_panel:
   slider_params:
     position_low: [-0.04, -0.02, 0.02]
     position_high: [0.005, 0.02, 0.03]
 
 pybullet_camera:
-  cameraDistance: 0.12
-  cameraYaw: 90.
-  cameraPitch: -45.
-  cameraTargetPosition: [0, 0, 0]
+  cameraDistance: 0.4
+  cameraYaw: 0.
+  cameraPitch: -89.99
+  cameraTargetPosition: [0, 0.01, 2]

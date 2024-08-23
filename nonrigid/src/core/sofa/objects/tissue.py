@@ -4,7 +4,7 @@ import vtk
 from vtk import vtkDataSet
 from vtk.util import numpy_support
 from typing import Optional
-
+from splib3.numerics import RigidDof
 import Sofa.Core
 from core.sofa.components.solver import TimeIntegrationType, ConstraintCorrectionType, SolverType, add_solver
 from core.sofa.components.models import MappingType, add_collision_models, add_mapping
@@ -13,6 +13,7 @@ from core.sofa.components.forcefield import Material, add_forcefield
 from utils.sofautils import get_bbox, check_valid_displacement, get_distance_np
 from utils.vtkutils import has_tetra
 from core.log import Log
+import math
 def read_mesh_file(location):
     location=os.path.join(os.getcwd(),location)
     """
@@ -70,6 +71,7 @@ class Tissue(Sofa.Core.Controller):
                 mechanical: bool =True,
                 collision_spheres_radius: float = 0.005,
                 view: bool = False,
+                senderD = None
                 
     ):
         """ 
@@ -104,6 +106,7 @@ class Tissue(Sofa.Core.Controller):
         self.is_moving    = False
         self.surface_node=None
         self.stiffness=contact_stiffness
+        self.dataSender=senderD
         # Check on caribou
         if use_caribou:
             # TODO check if caribou libraries are there. If not, use default components setting use_caribou to false
@@ -154,6 +157,10 @@ class Tissue(Sofa.Core.Controller):
                                             template="Vec3d",
                                             showObject=False
                                             )
+        self.transformWrapper=RigidDof(self.state)
+        pos=self.transformWrapper.getPosition()
+        angles=self.getAngles()
+        self.dataSender.updateTissue(pos,angles)
         self.fem = add_forcefield( parent_node=self.node,
                                     material=material,
                                     topology=topology_type,
@@ -215,6 +222,8 @@ class Tissue(Sofa.Core.Controller):
                 collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../MechanicalObject_state", output="@StoringForces")
 
                 print(" added collision models")
+    def radTodeg(self,angle):
+         return (angle*180)/math.pi
     def mapping(self):
         add_mapping(parent_node=self.surface_node, mapping_type=MappingType.BARYCENTRIC)
     #########################################################
@@ -222,15 +231,23 @@ class Tissue(Sofa.Core.Controller):
     #########################################################
     def onSimulationInitDoneEvent(self, __):
         self.previous_pos = np.asarray(self.state.rest_position.value)
-
+    def getAngles(self):
+        from splib3.numerics.quat import Quat
+        eulerAngles= Quat(self.transformWrapper.getOrientation().tolist()).getEulerAngles()
+        return [round(self.radTodeg(el),4) for el in eulerAngles]
     def onAnimateEndEvent(self, __):
         # Check for simulation instability at the end of each time step
+        #print(f'pos: {self.transformWrapper.getPosition()}')
+        pos=self.transformWrapper.getPosition()
+        angles=self.getAngles()
+        self.dataSender.updateTissue(pos,angles)
+        return
         if(self.check_displacement):
-            print(type(self.state.position))
+            #print(type(self.state.position))
             current_pos = np.asarray(self.state.position.value)
             displ = current_pos - self.previous_pos
             self.previous_pos = current_pos
-
+            
             self.is_stable, self.is_moving = check_valid_displacement(displ, low_thresh=1e-01, high_thresh=0.4)		
 
     def reset(self):

@@ -18,6 +18,8 @@ mayby comment out pip install -r requirements/dev.txt if necessary
 	cd $REPO
 	cd tacto/examples
 	python3 demo_pybullet_digit.py
+#### Export Path
+	export PYTHONPATH=$REPO/tacto
 ## Non-rigid-Data Pipeline 
 This pipeline is used to create the soft tissue characteristics of organs the are usable in the sofa environment https://gitlab.com/nct_tso_public/nonrigid-data-generation-pipeline
 #### install packages
@@ -77,7 +79,8 @@ It is highly recommended to put all of the path exports in your ~/.bashrc (obvio
 	export SOFA_ROOT="$sofaLocation/SOFA_v22.12.00_Linux"
 	export PYTHONPATH=$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$PYTHONPATH
 	export PYTHONPATH=$REPO/stlib/build/lib/python3/site-packages:$PYTHONPATH
-	export PYTHONPATH=$REPO/robot_learning/nonrigid/src:$PYTHONPATH
+	export PYTHONPATH=$REPO/nonrigid/src:$PYTHONPATH
+	export PYTHONPATH=$REPO/tacto:$PYTHONPATH
 ## Trivia
 	https://sofapython3.readthedocs.io/en/latest/content/modules/Sofa/generated/Sofa.Core/classes/Sofa.Core.DataContainer.html
 	Sofa can also be installed directly in anaconda via https://github.com/sofa-framework/conda-ci

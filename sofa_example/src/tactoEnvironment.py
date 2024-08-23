@@ -10,6 +10,7 @@ import numpy as np
 import tacto
 import threading
 import logging
+from time import sleep
 from dataTransport import TransportData,DataReceiver
 log = logging.getLogger(__name__)
 def stlToPyrenderMesh(meshfile):
@@ -18,8 +19,10 @@ def stlToPyrenderMesh(meshfile):
     trimesh_mesh = trimesh.Trimesh(vertices=stl_mesh.vectors.reshape(-1, 3),
                                 faces=np.arange(len(stl_mesh.vectors) * 3).reshape(-1, 3))
     pyrender_mesh = pyrender.Mesh.from_trimesh(trimesh_mesh)
-def tactoLoop(digits):
+def tactoLoop(digits,dataReceive):
     while True:
+        #print(dataReceive.get())
+        
         color, depth = digits.render()
         digits.updateGUI(color, depth)
 def tactoLaunch(cfg,receiveConn):
@@ -45,14 +48,14 @@ def tactoLaunch(cfg,receiveConn):
     digits.add_body(obj)
 
     # Create control panel to control the 6DoF pose of the object
-    panel = px.gui.PoseControlPanel(obj, **cfg.object_control_panel)
-    panel.start()
-    log.info("Use the slides to move the object until in contact with the DIGIT")
+    #panel = px.gui.PoseControlPanel(obj, **cfg.object_control_panel)
+    #panel.start()
+    #log.info("Use the slides to move the object until in contact with the DIGIT")
     dataReceive.start()
     # run p.stepSimulation in another thread
     t = px.utils.SimulationThread(real_time_factor=1.0)
     t.start()
-    thread = threading.Thread(target=tactoLoop, args=(digits,))
+    thread = threading.Thread(target=tactoLoop, args=(digits,dataReceive,))
     thread.start()
     thread.join()
     dataReceive.join()
