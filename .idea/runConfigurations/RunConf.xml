@@ -1,0 +1,29 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="RunConf" type="PythonConfigurationType" factoryName="Python">
+    <module name="non-rigid-Tacto" />
+    <option name="ENV_FILES" value="" />
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs>
+      <env name="PYTHONPATH" value="$SOFA_ROOT/plugins/SofaPython3/lib/python3/site-packages:$REPO/stlib/build/lib/python3/site-packages:$REPO/robot_learning/nonrigid/src:$PYTHONPATH" />
+      <env name="PYTHONUNBUFFERED" value="1" />
+      <env name="SOFA_ROOT" value="$HOME/SOFA_v22.12.00_Linux" />
+      <env name="VASCUSYNTH_PATH" value="$REPO/vascu_synth/build/VascuSynth" />
+      <env name="PATH" value="$HOME/blender-3.4.1-linux-x64:$PATH" />
+    </envs>
+    <option name="SDK_HOME" value="" />
+    <option name="SDK_NAME" value="new_environment" />
+    <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/" />
+    <option name="IS_MODULE_SDK" value="false" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/sofa_example/src/test/normalForceExmp.py" />
+    <option name="PARAMETERS" value="" />
+    <option name="SHOW_COMMAND_LINE" value="false" />
+    <option name="EMULATE_TERMINAL" value="false" />
+    <option name="MODULE_MODE" value="false" />
+    <option name="REDIRECT_INPUT" value="false" />
+    <option name="INPUT_FILE" value="" />
+    <method v="2" />
+  </configuration>
+</component>
