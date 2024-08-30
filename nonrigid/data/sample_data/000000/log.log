@@ -4,13 +4,225 @@ SceneObjectGeneratorBlock_0 (ID: 0)
 --------------------------
 
 ==========================
+RandomSceneBlock_0 (ID: 1)
+--------------------------
+
+-------------
+blender
+-------------
+d2 /home/syc/non-rigid-Tacto/nonrigid
+	 /home/syc/blender-3.4.1-linux-x64/3.4/scripts/startup
+	 /home/syc/blender-3.4.1-linux-x64/3.4/scripts/modules
+	 /home/syc/non-rigid-Tacto/robot_learning/nonrigid/src
+	 /home/syc/non-rigid-Tacto/stlib/build/lib/python3/site-packages
+	 /home/syc/SOFA_v22.12.00_Linux/plugins/SofaPython3/lib/python3/site-packages
+	 /home/syc/non-rigid-Tacto/nonrigid
+	 /home/syc/blender-3.4.1-linux-x64/3.4/python/lib/python310.zip
+	 /home/syc/blender-3.4.1-linux-x64/3.4/python/lib/python3.10
+	 /home/syc/blender-3.4.1-linux-x64/3.4/python/lib/python3.10/lib-dynload
+	 /home/syc/blender-3.4.1-linux-x64/3.4/python/lib/python3.10/site-packages
+	 /home/syc/blender-3.4.1-linux-x64/3.4/scripts/freestyle/modules
+	 /home/syc/blender-3.4.1-linux-x64/3.4/scripts/addons/modules
+	 /home/syc/.config/blender/3.4/scripts/addons/modules
+	 /home/syc/blender-3.4.1-linux-x64/3.4/scripts/addons
+	 
+	 ../src/utils
+	 ../../utils
+	 src/utils
+	 generation_utils
+	 /home/syc/non-rigid-Tacto/nonrigid/src/blocks/scene_generation/generation_utils
+	 /home/syc/non-rigid-Tacto/src/blocks/scene_generation/generation_utils
+Running scene generation with arguments:
+{'add_abdominal_wall': {'filename': 'abdominal_wall_A.obj',
+                        'outset_amplitude': 0.04035667001171853,
+                        'outset_frequency': 6.5789230495802595},
+ 'add_camera': None,
+ 'add_deformable_organ': {'add_concavity': True,
+                          'cut_to_fit': True,
+                          'filename': 'surface_A.stl',
+                          'predeform_noise': True,
+                          'predeform_twist': True,
+                          'size': [0.3, 0.3, 0.3]},
+ 'add_fill_fat': None,
+ 'add_fixed_attachments': [{'filename': 'fixed_attachments_A.obj',
+                            'surface_amount': 0.034091892219985195}],
+ 'add_ligament': [{'filename': 'ligament_A.obj'},
+                  {'filename': 'ligament_B.obj'}],
+ 'add_nodal_force': None,
+ 'add_rigid_organ': [{'filename': 'attached_organ_A.obj',
+                      'rigid_transform': True},
+                     {'filename': 'attached_organ_B.obj',
+                      'rigid_transform': True}],
+ 'add_tumor': None,
+ 'outdir': 'data/sample_data/000000',
+ 'random_seed': 0}
+RND ORGAN: <random.Random object at 0x7dce5753d210> (min: <Vector (-0.1500, -0.1500, -0.1500)>, max: <Vector (0.1500, 0.1500, 0.1500)>) True surface_A.stl True True True 0.5 None 0.02
+Before delete islands: 689
+surface_A.stl 689
+largest (to keep): surface_A.stl 689
+After delete islands: 689
+Displace modifier applied successfully.
+RND ORGAN: <random.Random object at 0x7dce5753d210> (min: <Vector (-0.1500, -0.1500, -0.1500)>, max: <Vector (0.1500, 0.1500, 0.1500)>) True attached_organ_A.obj False False False 0.5 None 0.02
+Before delete islands: 729
+attached_organ_A.obj.001 32
+attached_organ_A.obj 697
+largest (to keep): attached_organ_A.obj 697
+After delete islands: 697
+RND ORGAN: <random.Random object at 0x7dce5753d210> (min: <Vector (-0.1500, -0.1500, -0.1500)>, max: <Vector (0.1500, 0.1500, 0.1500)>) True attached_organ_B.obj False False False 0.5 None 0.02
+Before delete islands: 596
+attached_organ_B.obj 596
+largest (to keep): attached_organ_B.obj 596
+After delete islands: 596
+Exported mesh to data/sample_data/000000/surface_A.stl
+Progress:   0.00%
+    (  0.0001 sec |   0.0000 sec) OBJ Export path: 'data/sample_data/000000/attached_organ_A.obj'
+Progress:   0.00%
+Progress:   8.33%
+Progress:  16.67%
+Progress:  25.00%
+Progress:  33.33%
+Progress:  41.67%
+Progress:  50.00%
+          (  0.0099 sec |   0.0097 sec) Finished writing geometry of 'attached_organ_A.obj'.
+Progress:  50.00%
+Progress:  50.00%
+Progress:  50.00%
+      (  0.0099 sec |   0.0098 sec) Finished exporting geometry, now exporting materials
+Progress: 100.00%
+      (  0.0099 sec |   0.0099 sec) OBJ Export Finished
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+
+Exported mesh to data/sample_data/000000/attached_organ_A.obj 697
+Progress:   0.00%
+    (  0.0000 sec |   0.0000 sec) OBJ Export path: 'data/sample_data/000000/attached_organ_B.obj'
+Progress:   0.00%
+Progress:   8.33%
+Progress:  16.67%
+Progress:  25.00%
+Progress:  33.33%
+Progress:  41.67%
+Progress:  50.00%
+          (  0.0085 sec |   0.0084 sec) Finished writing geometry of 'attached_organ_B.obj'.
+Progress:  50.00%
+Progress:  50.00%
+Progress:  50.00%
+      (  0.0085 sec |   0.0085 sec) Finished exporting geometry, now exporting materials
+Progress: 100.00%
+      (  0.0086 sec |   0.0085 sec) OBJ Export Finished
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+
+Exported mesh to data/sample_data/000000/attached_organ_B.obj 596
+Progress:   0.00%
+    (  0.0000 sec |   0.0000 sec) OBJ Export path: 'data/sample_data/000000/abdominal_wall_A.obj'
+Progress:   0.00%
+Progress:   8.33%
+Progress:  16.67%
+Progress:  25.00%
+Progress:  33.33%
+Progress:  41.67%
+Progress:  50.00%
+          (  0.0062 sec |   0.0061 sec) Finished writing geometry of 'abdominal_wall_A.obj'.
+Progress:  50.00%
+Progress:  50.00%
+Progress:  50.00%
+      (  0.0062 sec |   0.0062 sec) Finished exporting geometry, now exporting materials
+Progress: 100.00%
+      (  0.0063 sec |   0.0063 sec) OBJ Export Finished
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+
+Exported mesh to data/sample_data/000000/abdominal_wall_A.obj 460
+Progress:   0.00%
+    (  0.0000 sec |   0.0000 sec) OBJ Export path: 'data/sample_data/000000/ligament_A.obj'
+Progress:   0.00%
+Progress:   8.33%
+Progress:  16.67%
+Progress:  25.00%
+Progress:  33.33%
+Progress:  41.67%
+Progress:  50.00%
+          (  0.0001 sec |   0.0001 sec) Finished writing geometry of 'ligament_A.obj'.
+Progress:  50.00%
+Progress:  50.00%
+Progress:  50.00%
+      (  0.0002 sec |   0.0001 sec) Finished exporting geometry, now exporting materials
+Progress: 100.00%
+      (  0.0002 sec |   0.0002 sec) OBJ Export Finished
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+
+Exported mesh to data/sample_data/000000/ligament_A.obj 8
+Progress:   0.00%
+    (  0.0000 sec |   0.0000 sec) OBJ Export path: 'data/sample_data/000000/ligament_B.obj'
+Progress:   0.00%
+Progress:   8.33%
+Progress:  16.67%
+Progress:  25.00%
+Progress:  33.33%
+Progress:  41.67%
+Progress:  50.00%
+          (  0.0002 sec |   0.0001 sec) Finished writing geometry of 'ligament_B.obj'.
+Progress:  50.00%
+Progress:  50.00%
+Progress:  50.00%
+      (  0.0002 sec |   0.0001 sec) Finished exporting geometry, now exporting materials
+Progress: 100.00%
+      (  0.0002 sec |   0.0002 sec) OBJ Export Finished
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+
+Exported mesh to data/sample_data/000000/ligament_B.obj 6
+Progress:   0.00%
+    (  0.0000 sec |   0.0000 sec) OBJ Export path: 'data/sample_data/000000/fixed_attachments_A.obj'
+Progress:   0.00%
+Progress:   8.33%
+Progress:  16.67%
+Progress:  25.00%
+Progress:  33.33%
+Progress:  41.67%
+Progress:  50.00%
+          (  0.0002 sec |   0.0001 sec) Finished writing geometry of 'fixed_attachments_A.obj'.
+Progress:  50.00%
+Progress:  50.00%
+Progress:  50.00%
+      (  0.0002 sec |   0.0001 sec) Finished exporting geometry, now exporting materials
+Progress: 100.00%
+      (  0.0002 sec |   0.0002 sec) OBJ Export Finished
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+Progress: 100.00%
+
+Exported mesh to data/sample_data/000000/fixed_attachments_A.obj 31
+Blender 3.4.1 (hash 55485cb379f7 built 2022-12-20 00:46:45)
+
+
+
+
+
+
+
+
+Blender quit
+
+==========================
+GmshMeshingBlock_0 (ID: 2)
+--------------------------
+
+
+==========================
 SimulationBlock_0 (ID: 3)
 --------------------------
-
-==========================
-RigidDisplacementBlock_0 (ID: 4)
---------------------------
-
-==========================
-SurfaceExtractionBlock_0 (ID: 5)
---------------------------
+Error: SimulationBlock_0 (ID: 3): Sample 0 failed the validation step. Surface area increased considerably during simulation, from 0.0000 to 0.2603 in deformed.vtu.
