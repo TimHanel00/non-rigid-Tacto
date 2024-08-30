@@ -129,18 +129,18 @@ hydra:
   runtime:
     version: 1.3.2
     version_base: '1.1'
-    cwd: /home/tim/extended_space/robot_learning/tacto/examples
+    cwd: /home/syc/non-rigid-Tacto/tacto/examples
     config_sources:
     - path: hydra.conf
       schema: pkg
       provider: hydra
-    - path: /home/tim/extended_space/robot_learning/tacto/examples/conf
+    - path: /home/syc/non-rigid-Tacto/tacto/examples/conf
       schema: file
       provider: main
     - path: ''
       schema: structured
       provider: schema
-    output_dir: /home/tim/extended_space/robot_learning/tacto/examples
+    output_dir: /home/syc/non-rigid-Tacto/tacto/examples
     choices:
       hydra/env: default
       hydra/callbacks: null

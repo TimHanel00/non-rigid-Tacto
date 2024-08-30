@@ -14,3 +14,6 @@ tacto.egg-info/dependency_links.txt
 tacto.egg-info/not-zip-safe
 tacto.egg-info/requires.txt
 tacto.egg-info/top_level.txt
+tests/test_random_normal_generator.py
+tests/test_render_from_depth_osmesa.py
+tests/test_timeit.py
