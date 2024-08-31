@@ -28,5 +28,5 @@ object_control_panel:
 pybullet_camera:
   cameraDistance: 0.4
   cameraYaw: 0.
-  cameraPitch: -89.99
+  cameraPitch: -89.999
   cameraTargetPosition: [0, 0.01, 2]

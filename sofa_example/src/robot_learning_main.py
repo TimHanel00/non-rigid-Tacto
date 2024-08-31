@@ -71,7 +71,6 @@ class CollisionResponseHandler(Sofa.Core.Controller):
             print(f"Normal force: {coll['normalForce']}")
 
     def onCollision(self, collision):
-        print("awdpokawdpokapowkdpoawkdposkdpokpwok")
         obj1 = collision.getContactElements()[0]
         obj2 = collision.getContactElements()[1]
         normal_force = collision.getNormalForce()
@@ -115,7 +114,7 @@ def createScene(root,dataSend):
     #print(type(tissue))
     #createCollisionMesh(root)
     print(type(root))
-    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_decimated.stl",senderD=dataSend,parent=root,tissue=tissue.node))
+    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed2.stl",senderD=dataSend,parent=root,tissue=tissue.node))
 
     return root
 def sofaSimLoop(root,sendConn):

@@ -47,7 +47,7 @@ class TactoController(Sofa.Core.Controller):
         self.node=self.parent.addChild(name)
         
         self.addBasics(self.node)
-        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[0.0, 0.11, 0, 0, 0, 0, 1])
+        self.rigidobject=self.node.addObject("MechanicalObject",template="Rigid3d",name="TactoMechanics",position=[0.0, 0.11, 0, 0,0,0,1])
         self.node.addObject("UniformMass",totalMass=1.0)
         self.addVisuals(self.node)
         self.collision=self.addCollision(self.node)
@@ -61,7 +61,7 @@ class TactoController(Sofa.Core.Controller):
         self.key=""
         self.XYZ=[1.0,0.0,0.0]
         self.scaleIncr=0.1
-        self.scale=0.1
+        self.scale=0.01
         self.transformWrapper=RigidDof(self.rigidobject)
         self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles())
         self.mode=0
@@ -91,29 +91,27 @@ class TactoController(Sofa.Core.Controller):
         print(f' Position after: {t1}')
     def scaleF(self):
         scalebef=self.scale
-
+        
+        
+        print(self.scaleIncr)
         if self.key=='+':
-
+            switch=math.floor(math.log10(self.scale))
+            self.scaleIncr=(10**switch)
             self.scale+=self.scaleIncr
-            self.scale=round(self.scale,4)
-            if self.scale==2.0:
-                self.scaleIncr=1.0
-            if self.scale==0.1:
-                self.scaleIncr=0.1
-            if self.scale==0.01:
-                self.scaleIncr=0.01
+            self.scale=round(self.scale,-switch+1)
+            
+            #self.scale=round(self.scale,4)
+            
         if self.key=='-':
-            if self.scale<=0.001:
+            switch=math.floor(math.log10(self.scale-(1e-9)))
+            self.scaleIncr=(10**switch)
+            if self.scale<=0.0001:
                 print("ScaleValueToShort")
                 return
             self.scale-=self.scaleIncr
-            self.scale=round(self.scale,4)
-            if self.scale==2.0:
-                self.scaleIncr=0.1
-            if self.scale==0.1:
-                self.scaleIncr=0.01
-            if self.scale==0.01:
-                self.scaleIncr=0.001
+            self.scale=round(self.scale,-switch+1)
+            
+            #self.scale=round(self.scale,4)
         
         print(f'Change Scale of Operations (T/R) from {scalebef} to {self.scale} ')
     def getAngles(self):
@@ -124,7 +122,7 @@ class TactoController(Sofa.Core.Controller):
         print(f'Angles before Rotate: {self.getAngles()}')
         #axis=[int(self.XYZ[0]),int(self.XYZ[1]),int(self.XYZ[2])]
         
-        val=10*self.scale
+        val=100*self.scale
         if val>180.0:
             val=val%180
             val=-180+val

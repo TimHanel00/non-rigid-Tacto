@@ -11,8 +11,9 @@ sensor:
   camera:
     - cam0:
       position: [0, 0, 0.015] # Camera position
-      #orientation: [90, 0, -90] # Euler angles, "xyz", in degrees; e.g. [0, 0, 0]: towards negative z-axis; [90, 0, -90]: towards x-axis
-      orientation: [90, 0, -90]
+      #position: [0., 0, -0.015] # Camera position Edit
+      orientation: [90, 0, -90] # Euler angles, "xyz", in degrees; e.g. [0, 0, 0]: towards negative z-axis; [90, 0, -90]: towards x-axis
+      #orientation: [180, 0, 0]
       yfov: 60 # Vertical field of view in degrees
       znear: 0.001 # Distance to the near clipping plane, in meters
       lightIDList: [0, 1, 2] # Select light ID list for rendering (OpenGL has max limit of 8 lights)
@@ -29,15 +30,19 @@ sensor:
   lights:
     # Light position & properties. 
 
-    origin: [0.005, 0, 0.015] # center of the light plane, in meters
-
+    #origin: [0.005, 0, 0.015] # center of the light plane, in meters
+    origin: [0.005, 0, 0.015]
     # Light position can be expressed in:
     # - polar coordinates: r and theta. (in y-z plane), and x coordinate of the plane
     # - cartesian coordinates: xyz
     # Only one of the xyz or rtheta is required.
     polar: True # True: apply polar coordinates; False: apply cartesian coordinates;    
     xyz: # cartesian coordinates
-      coords: [[0, 0.01732, 0.01], [0, -0.01732, 0.01], [0, 0, -0.02]]
+    
+ 
+ 
+      #coords: [[ 0.,-0.01714284,-0.01030075], [ 0.,0.01749189,-0.0096962 ], [ 0.,-0.00034905,0.01999695]]
+      coords: [[0, 0.01732, 0.01], [0, -0.01732, 0.01], [0, 0, -0.02]] #orig
     xrtheta: # polar coordinates in y-z plane
       xs: [0, 0, 0] # x coordinate of the y-z plane
       rs: [0.02, 0.02, 0.02] # r in polar coordinates
@@ -54,5 +59,6 @@ sensor:
   force:
     enable: True # flag for enable force feedback. When enabled, the larger normal force is, the closer object is adjusted to the sensor.
     range_force: [0, 100] # dynamic range of forces used to simulate the elastomer deformation
-    max_deformation: 0.005 # max pose depth adjustment, in meters
+    #max_deformation: 0.005 # max pose depth adjustment, in meters
+    max_deformation: 0.005
 
