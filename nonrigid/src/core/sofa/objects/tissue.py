@@ -160,25 +160,27 @@ class Tissue(Sofa.Core.Controller):
         self.transformWrapper=RigidDof(self.state)
         pos=self.transformWrapper.getPosition()
         angles=self.getAngles()
-        self.dataSender.updateTissue(pos,angles)
+        if self.dataSender is not None:
+            self.dataSender.updateTissue(pos,angles)
         self.fem = add_forcefield( parent_node=self.node,
                                     material=material,
                                     topology=topology_type,
                                     topology_link = self.volume_topology.getLinkPath(),
                                     use_caribou=use_caribou,
                                     ) 
-        self.node.addObject('UniformMass', 
-                                totalMass=1.0, 
-                                name='mass'
-                                )	
-        self.node.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
+        #self.node.addObject('UniformMass', 
+                                #totalMass=1.0, 
+                                #name='mass'
+                                #)	
+        self.node.addObject("MeshMatrixMass", name="Mass", massDensity=3.0)
+        #self.node.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
         #self.node.addObject('LinearSolverConstraintCorrection')
         # Force field
             
 
         # Solver
         self.node.addObject('EulerImplicitSolver', name="cg_odesolver")
-        self.node.addObject("CGLinearSolver")
+        self.node.addObject("CGLinearSolver",iterations=20, tolerance=1e-2, threshold=1e-2)
         """
         add_solver( parent_node=self.node, 
                     analysis_type=analysis, 
@@ -238,9 +240,11 @@ class Tissue(Sofa.Core.Controller):
     def onAnimateEndEvent(self, __):
         # Check for simulation instability at the end of each time step
         #print(f'pos: {self.transformWrapper.getPosition()}')
+        
         pos=self.transformWrapper.getPosition()
         angles=self.getAngles()
-        self.dataSender.updateTissue(pos,angles)
+        if self.dataSender is not None:
+            self.dataSender.updateTissue(pos,angles)
         return
         if(self.check_displacement):
             #print(type(self.state.position))

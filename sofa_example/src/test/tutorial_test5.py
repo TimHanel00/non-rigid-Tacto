@@ -1,9 +1,10 @@
+from meshlib import mrmeshpy
 import Sofa.Core
 import SofaRuntime, Sofa.Core, Sofa.Gui
 from stlib3.physics.rigid import Floor, Cube
 import numpy as np
 from stlib3.physics.rigid import Sphere # 使用 stlib3 的 Sphere 类来定义球体
-
+from core.sofa.components.forcefield import Material, ConstitutiveModel
 class drawForces(Sofa.Core.Controller):
 
     def __init__(self, *args, **kwargs):
@@ -32,7 +33,8 @@ class drawForces(Sofa.Core.Controller):
 
         # 获取约束力
         forcesNorm = self.rootNode.GCS.constraintForces.value
-
+        print(forcesNorm)
+        """
         # 在 onAnimateEndEvent 中的现有代码基础上，添加总力累加变量
         contactforce_x = 0
         contactforce_y = 0
@@ -88,22 +90,21 @@ class drawForces(Sofa.Core.Controller):
             print(f"force array: {sphere_forces}")
             self.rootNode.drawNode.drawForceFF.forces.value = sphere_forces
             self.rootNode.drawNode.drawPositions.position.value = self.rootNode.Sphere.collision.MechanicalObject.position.value
-
-
+        """
 def createCollisionMesh(rootNode):
     rootNode.addObject("MeshGmshLoader", name="meshLoaderCoarse", filename="mesh/liver.msh")
     rootNode.addObject("MeshObjLoader", name="meshLoaderFine", filename="mesh/liver-smooth.obj")
 
     liver = rootNode.addChild("Liver")
     liver.addObject('EulerImplicitSolver', name="cg_odesolver", rayleighStiffness=0.1, rayleighMass=0.1)
-    liver.addObject("CGLinearSolver", iterations=200, tolerance=1e-9, threshold=1e-9)
+    liver.addObject("CGLinearSolver", iterations=50, tolerance=1e-4, threshold=1e-4)
     liver.addObject("TetrahedronSetTopologyContainer", name="topo", src="@../meshLoaderCoarse")
     liver.addObject("TetrahedronSetGeometryAlgorithms", template="Vec3d", name="GeomAlgo")
 
     liver.addObject("MechanicalObject", template="Vec3d", name="MechanicalModel")
     liver.addObject('TetrahedralCorotationalFEMForceField', name="FEM", method="large", youngModulus=1000, poissonRatio=0.4, computeGlobalMatrix=True)
-    liver.addObject("MeshMatrixMass", name="Mass", massDensity=3.0)
-    liver.addObject('FixedConstraint', name="FixedConstraint", indices="1 3 50")
+    liver.addObject("MeshMatrixMass", name="Mass", massDensity=0.02)
+    #liver.addObject('FixedConstraint', name="FixedConstraint", indices="1 3 50")
     liver.addObject("ConstantForceField", totalForce=[100.0, 0.0, 0.0])
 
     visual = liver.addChild("Visual")
@@ -113,7 +114,7 @@ def createCollisionMesh(rootNode):
     collision = liver.addChild("Collision")
     collision.addObject("Mesh", src="@../../meshLoaderFine")
     collision.addObject("MechanicalObject", name="StoringForces", scale=1.0)
-    collision.addObject("TriangleCollisionModel", name="CollisionModel", contactStiffness=3.0)
+    collision.addObject("TriangleCollisionModel", name="CollisionModel", contactStiffness=0.02)
     collision.addObject("BarycentricMapping", name="CollisionMapping", input="@../", output="@StoringForces")
 
     # 添加 ConstraintCorrection 以确保力被正确应用
@@ -158,13 +159,13 @@ def createScene(rootNode):
         'Sofa.Component.ODESolver.Forward'
     ])
     # root.addObject('VisualStyle', displayFlags='showVisual showCollisionModels showWireframe showInteractionForceFields showForceFields')
-    rootNode.addObject('VisualStyle', displayFlags='showVisual showCollisionModels showWireframe showInteractionForceFields showForceFields')
+    rootNode.addObject('VisualStyle', displayFlags='showVisual showCollisionModels showForceFields')
     rootNode.addObject('CollisionPipeline', verbose=0, draw=0)
     rootNode.addObject('BruteForceDetection', name="BruteForceBroadPhase")
-    rootNode.addObject('NewProximityIntersection', name="Proximity", alarmDistance=0.5, contactDistance=0.001)
+    rootNode.addObject('NewProximityIntersection', name="Proximity", alarmDistance=0.1, contactDistance=0.01)
     rootNode.addObject('CollisionResponse', name="CollisionResponse", response="FrictionContactConstraint")
     rootNode.addObject('FreeMotionAnimationLoop')
-    rootNode.addObject('GenericConstraintSolver', name="GCS", maxIt=1000, tolerance=1e-6, computeConstraintForces=True)
+    rootNode.addObject('GenericConstraintSolver', name="GCS", maxIt=20, tolerance=1e-2, computeConstraintForces=True)
     rootNode.addObject('DefaultContactManager', name='Response', response='FrictionContactConstraint')
     rootNode.dt = 0.01
     rootNode.gravity = [0., 0., 0.]
@@ -172,9 +173,9 @@ def createScene(rootNode):
     createSphere(rootNode)
 
     rootNode.addObject(drawForces(name="ForceController", rootNode=rootNode))
-    drawNode = rootNode.addChild('drawNode')
-    MOdraw = drawNode.addObject('MechanicalObject', name="drawPositions", position="@/rootNode/Sphere/collision/MechanicalObject.position", size=8)
-    drawNode.addObject('ConstantForceField', name="drawForceFF", force=[0, 0, 0], showArrowSize=1)
+    #drawNode = rootNode.addChild('drawNode')
+    #MOdraw = drawNode.addObject('MechanicalObject', name="drawPositions", position="@/rootNode/Sphere/collision/MechanicalObject.position", size=8)
+    #drawNode.addObject('ConstantForceField', name="drawForceFF", force=[0, 0, 0], showArrowSize=1)
 
 
 

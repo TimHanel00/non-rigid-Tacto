@@ -31,7 +31,8 @@ class Material:
         constitutive_model: ConstitutiveModel = ConstitutiveModel.LINEAR, 
         poisson_ratio: float = 0.3, 
         young_modulus: float = 4000, 
-        mass_density: float = 2.5
+        mass_density: float = 2.5,
+        computeGlobalMatrix: bool =False
     ):
         """ 
         Args:
@@ -50,7 +51,7 @@ class Material:
         self.poisson_ratio = poisson_ratio
         self.young_modulus = young_modulus
         self.mass_density = mass_density
-
+        self.computeGlobalMatrix=computeGlobalMatrix
         linear_models = [ConstitutiveModel.LINEAR, ConstitutiveModel.COROTATED]
         if constitutive_model in linear_models:
             m = ["small", "large"]
@@ -90,6 +91,7 @@ def add_forcefield(
                 ff = parent_node.addObject('TetrahedronElasticForce',
                                             youngModulus=material.young_modulus,
                                             poissonRatio=material.poisson_ratio,
+                                            computeGlobalMatrix=material.computeGlobalMatrix,
                                             corotated=bool( material.constitutive_model == ConstitutiveModel.COROTATED ),
                                             topology_container=topology_link,
                                             name=name
@@ -101,6 +103,7 @@ def add_forcefield(
                                             youngModulus=material.young_modulus,
                                             poissonRatio=material.poisson_ratio,
                                             listening=1,
+                                            computeGlobalMatrix=material.computeGlobalMatrix,
                                             computeVonMisesStress = 0, # 2=using full Green tensor
                                             showVonMisesStressPerNode = 0
                                         )
@@ -111,6 +114,7 @@ def add_forcefield(
                 ff = parent_node.addObject('HexahedronElasticForce',
                                             youngModulus=material.young_modulus,
                                             poissonRatio=material.poisson_ratio,
+                                            computeGlobalMatrix=material.computeGlobalMatrix,
                                             corotated=bool( material.constitutive_model == ConstitutiveModel.COROTATED ),
                                             topology_container=topology_link,
                                             name=name
@@ -120,6 +124,7 @@ def add_forcefield(
                                             name=name,
                                             youngModulus=material.young_modulus,
                                             poissonRatio=material.poisson_ratio,
+                                            computeGlobalMatrix=material.computeGlobalMatrix
                                         )
     # Hyperelastic FEM
     else:
