@@ -34,7 +34,7 @@ class drawForces(Sofa.Core.Controller):
         # 获取约束力
         forcesNorm = self.rootNode.GCS.constraintForces.value
         print(forcesNorm)
-        """
+        
         # 在 onAnimateEndEvent 中的现有代码基础上，添加总力累加变量
         contactforce_x = 0
         contactforce_y = 0
@@ -90,7 +90,6 @@ class drawForces(Sofa.Core.Controller):
             print(f"force array: {sphere_forces}")
             self.rootNode.drawNode.drawForceFF.forces.value = sphere_forces
             self.rootNode.drawNode.drawPositions.position.value = self.rootNode.Sphere.collision.MechanicalObject.position.value
-        """
 def createCollisionMesh(rootNode):
     rootNode.addObject("MeshGmshLoader", name="meshLoaderCoarse", filename="mesh/liver.msh")
     rootNode.addObject("MeshObjLoader", name="meshLoaderFine", filename="mesh/liver-smooth.obj")

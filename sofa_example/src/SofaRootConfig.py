@@ -18,6 +18,7 @@ class Environment():
     def setupEnvironment(self):
         #self.root.addObject('DefaultVisualManagerLoop')
         self.root.addObject('DefaultAnimationLoop')
+        self.root.addObject('DefaultVisualManagerLoop')
         self.root.addObject("RequiredPlugin", pluginName=[
         'Sofa.Component.Constraint.Lagrangian.Solver',
         'Sofa.Component.Constraint.Projective',
@@ -41,13 +42,13 @@ class Environment():
         'Sofa.Component.ODESolver.Forward'
         ])
         self.root.addObject('VisualStyle', displayFlags="showVisual showCollisionModels showForceFields")
-        self.root.addObject('CollisionPipeline', verbose=0,draw=0)
+        self.root.addObject('CollisionPipeline', verbose=0,draw=0,depth=2)
         self.root.addObject('BruteForceDetection', name="BruteForceBroadPhase")
         self.root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.01,contactDistance=0.001)
-        self.root.addObject('CollisionResponse', name="CollisionResponse", response="FrictionContactConstraint")
-        self.root.addObject('FreeMotionAnimationLoop')
+        self.root.addObject('CollisionResponse', name="CollisionResponse", response="PenalityContactForceField")
+        #self.root.addObject('FreeMotionAnimationLoop')
         self.root.addObject('GenericConstraintSolver', name="GCS", maxIt=20, tolerance=1e-2, computeConstraintForces=True)
-        self.root.addObject('DefaultContactManager', name='Response', response='FrictionContactConstraint')
+        self.root.addObject('DefaultContactManager', name='Response', response='PenalityContactForceField')
         #self.root.addObject('CollisionResponse', name="CollisionResponse", response="PenalityContactForceField")
         #root.addObject('DiscreteIntersection')
         #root.addObject("RequiredPlugin",pluginName="Sofa.Component.ODESolver.Forward Sofa.Component.LinearSolver.Iterative Sofa.Component.Mass Sofa.Component.MechanicalLoad" 

@@ -119,6 +119,7 @@ class Tissue(Sofa.Core.Controller):
         tissue_node = parent_node.addChild(node_name)
         self.node = tissue_node
         parent_node.addObject("MeshSTLLoader",name="meshLoaderFine",filename="mesh/surface_A.stl")
+        
         # Get mesh bounding box
         xmin, xmax, ymin, ymax, zmin, zmax = get_bbox( simulation_mesh.GetPoints().GetData() )
         self.bounding_box = [xmin, ymin, zmin, xmax, ymax, zmax]
@@ -172,8 +173,8 @@ class Tissue(Sofa.Core.Controller):
                                 #totalMass=1.0, 
                                 #name='mass'
                                 #)	
-        self.node.addObject("MeshMatrixMass", name="Mass", massDensity=3.0)
-        #self.node.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
+        self.node.addObject("MeshMatrixMass", name="Mass", massDensity=0.01)
+        self.node.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
         #self.node.addObject('LinearSolverConstraintCorrection')
         # Force field
             
@@ -202,9 +203,13 @@ class Tissue(Sofa.Core.Controller):
                                                     #name = f"{surface_node_name}_loader" 	
                                                     #)
             #add_mapping(parent_node=surface_node, mapping_type=MappingType.BARYCENTRIC)
-            visual=tissue_node.addChild("Visual")
-            visual.addObject("OglModel",name="VisualModel",src="@../../meshLoaderFine")
-            visual.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalObject_state", output="@VisualModel")
+            self.visual=tissue_node.addChild("Visual")
+            self.visual.addObject("OglModel",name="VisualModel",src="@../../meshLoaderFine")
+            self.visual.addObject("MechanicalObject",template="Vec3d",name="StoringVis",scale=1.0)
+            self.visual.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalObject_state", output="@VisualModel")
+            #self.visual.addObject("BarycentricMapping", name="VMapping", input="@../MechanicalObject_state", output="@meshTransform")
+            #self.visual.addObject("STLExporter",filename='mesh/surface_out.stl',position="@VisualModel.position",triangle="@VisualModel.triangles",exportEveryNumberOfSteps="10")
+            
             # Visualization
             #if view:
                 #self.visualize_surface(f"{surface_node_name}_loader")
@@ -217,11 +222,11 @@ class Tissue(Sofa.Core.Controller):
                 #collision.addObject("MechanicalObject",name="StoringForces",scale=1.0)
                 #collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
                 #collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../MechanicalObject_state", output="@StoringForces")
-                collision=self.node.addChild("Collision")
-                collision.addObject("Mesh",src="@../../meshLoaderFine")
-                collision.addObject("MechanicalObject",template="Vec3d",name="StoringForces",scale=1.0)
-                collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=self.stiffness)
-                collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../MechanicalObject_state", output="@StoringForces")
+                self.collision=self.node.addChild("Collision")
+                self.collision.addObject("Mesh",src="@../../meshLoaderFine")
+                self.collision.addObject("MechanicalObject",template="Vec3d",name="StoringForces",scale=1.0)
+                self.collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=self.stiffness)
+                self.collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../MechanicalObject_state", output="@StoringForces")
 
                 print(" added collision models")
     def radTodeg(self,angle):
