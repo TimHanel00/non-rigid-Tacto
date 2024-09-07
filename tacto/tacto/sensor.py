@@ -14,7 +14,7 @@ import numpy as np
 import pybullet as p
 import trimesh
 from urdfpy import URDF
-
+import pyrender
 from .renderer import Renderer
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ def degtoRad(angle):
     return angle*math.pi/180
 @dataclass
 class Link:
-    obj_id: int  # pybullet ID
+    obj_id: int  # ID used for Tacto (pyrender and initially pybullet)
     link_id: int  # pybullet link ID (-1 means base)
     cid: int  # physicsClientId
     internalPos=None
@@ -53,16 +53,19 @@ class Link:
     lastSofaPos=None
     lastSofaRot=None
     force=None
+    mesh=None
+    pybullet_id: int #ID used explicitly for pybullet
     def get_pose(self,dataReceive):
+        p.setRealTimeSimulation(0)
         if self.link_id < 0:
             # get the base pose if link ID < 0
             position, orientation = p.getBasePositionAndOrientation(
-                self.obj_id, physicsClientId=self.cid
+                self.pybullet_id, physicsClientId=self.cid
             )
         else:
             # get the link pose if link ID >= 0
             position, orientation = p.getLinkState(
-                self.obj_id, self.link_id, physicsClientId=self.cid
+                self.pybullet_id, self.link_id, physicsClientId=self.cid
             )[:2]
 
         orientation = p.getEulerFromQuaternion(orientation, physicsClientId=self.cid)
@@ -85,26 +88,44 @@ class Link:
         pos=None
         orient=None
         self.force=dataReceive.get().normalForces
+        from time import sleep
         if(self.link_id==-1 and self.obj_id==1):# sensor
             
             pos=dataReceive.get().position
             
             orient=[degtoRad(i) for i in dataReceive.get().orientation]
-        if(self.link_id==-1 and self.obj_id==2):# tissue
+        if(self.obj_id==2):# tissue
             pos=dataReceive.get().tissuePos
+            self.mesh=dataReceive.get().mesh
             if(self.initSofaPos is None  and round(pos[0],3)!=0):
                 self.initSofaPos=pos
             if self.initSofaPos is not None:
                 pos=[y-x for x,y in zip(pos,self.initSofaPos)]
             orient=[degtoRad(i) for i in dataReceive.get().tissueOr]
-        if self.lastSofaPos is None and pos is not None:
-            
-            self.lastSofaPos=pos
-            self.lastSofaRot=orient
-        dSofaPos=[-x+y for x,y in zip(self.lastSofaPos,pos)]
-        dSofaOr=[-x+y for x,y in zip(self.lastSofaRot,orient)]
-        position=[x+y for x,y in zip(position,dSofaPos)]
-        orientation=[x+y for x,y in zip(orientation,dSofaOr)]
+            pos=(pos[0],pos[1],pos[2]+2)
+            if self.mesh is not None:
+                #print("updatingMesh")
+                
+                
+                #print(self.mesh)
+                vertices = self.mesh[0].vertices.tolist()  # Convert to list
+                indices = self.mesh[0].faces.flatten().tolist()     # Convert to list
+                #print(vertices)
+                #print(indices)
+                new_visual_shape = p.createVisualShape(
+                    shapeType=p.GEOM_MESH, 
+                    vertices=vertices, 
+                    indices=indices
+                )
+                new_collision_shape = p.createCollisionShape(shapeType=p.GEOM_MESH, vertices=vertices, 
+                    indices=indices)
+                old_id=self.pybullet_id
+
+                self.pybullet_id = p.createMultiBody(basePosition=pos,baseOrientation=orient,baseVisualShapeIndex=new_visual_shape, baseCollisionShapeIndex=new_collision_shape)
+                sleep(0.01)
+                p.removeBody(old_id)
+                
+                return pos,orient
         pos=(pos[0],pos[1],pos[2]+2)
         p.resetBasePositionAndOrientation(self.obj_id, pos, p.getQuaternionFromEuler(orient))
         self.lastSofaRot=orient
@@ -197,7 +218,7 @@ class Sensor:
 
         for link_id in link_ids:
             cam_name = "cam" + str(self.nb_cam)
-            self.cameras[cam_name] = Link(obj_id, link_id, self.cid)
+            self.cameras[cam_name] = Link(obj_id, link_id, self.cid,obj_id)
             self.nb_cam += 1
 
     def add_object(self, urdf_fn, obj_id, globalScaling=1.0):
@@ -236,7 +257,7 @@ class Sensor:
             obj_trimesh = obj_trimesh.apply_transform(pose)
             obj_name = "{}_{}".format(obj_id, link_id)
 
-            self.objects[obj_name] = Link(obj_id, link_id, self.cid)
+            self.objects[obj_name] = Link(obj_id, link_id, self.cid,obj_id)
             position, orientation = self.objects[obj_name].get_pose(self.dataReceiver)
 
             # Add object in pyrender
@@ -282,8 +303,15 @@ class Sensor:
         """
         Update the pose of each objects registered in tacto simulator
         """
+        
         for obj_name in self.objects.keys():
             self.object_poses[obj_name] = self.objects[obj_name].get_pose(self.dataReceiver)
+            if self.objects[obj_name].mesh is not None:
+                #print(type(self.objects[obj_name].mesh))
+                #print(self.objects[obj_name].mesh)
+                #print(type(self.renderer.current_object_nodes[obj_name].mesh))
+                self.renderer.current_object_nodes[obj_name].mesh=pyrender.Mesh.from_trimesh(self.objects[obj_name].mesh[0])
+                self.renderer.object_nodes[obj_name].mesh==self.objects[obj_name].mesh
 
     def get_force(self, cam_name):
         # Load contact force
@@ -336,7 +364,6 @@ class Sensor:
         """
 
         self._update_object_poses()
-
         colors = []
         depths = []
 

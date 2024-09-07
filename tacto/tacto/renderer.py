@@ -368,7 +368,9 @@ class Renderer:
             # Add extra light node into scene_depth
             light_node_depth = pyrender.Node(light=light, matrix=light_pose_0)
             self.scene_depth.add_node(light_node_depth)
-
+    def update_Mesh(self,objTrimesh,obj_name):
+        node=self.current_object_nodes[obj_name]
+        node.mesh=objTrimesh
     def add_object(
         self, objTrimesh, obj_name, position=[0, 0, 0], orientation=[0, 0, 0]
     ):

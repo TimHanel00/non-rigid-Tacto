@@ -46,102 +46,8 @@ def transform_to_global(local_point, orientation, position):
     # Apply the transformation: rotate then translate
     global_point = np.dot(rotation_matrix, local_point) + translation_vector
     return global_point
-class ForcesController(Sofa.Core.Controller):
-    def __init__(self, *args, **kwargs):
-        # These are needed (and the normal way to override from a python class)
-        Sofa.Core.Controller.__init__(self, *args, **kwargs)
-        self.rootNode = kwargs.get("rootNode")
-    def onAnimateEndEvent(self, event):
-        """
-        # 处理 Sphere 的力
-        try:
-            sphere_constraint = self.rootNode.Tacto.collision.MechanicalObject.constraint.value
-            # print("sphere_constraint", sphere_constraint)
-        except AttributeError:
-            print("Unable to find attribute: MechanicalObject for Sphere")
-            return
-        sphere_dt = self.rootNode.dt.value
-        sphere_constraintMatrixInline = np.fromstring(sphere_constraint, sep='  ')
-        # print("sphere_constraintMatrixInline:", sphere_constraintMatrixInline)
-        sphere_pointId = []
-        sphere_constraintId = []
-        sphere_constraintDirections = []
-        sphere_index = 0
-        i=0
-        # 获取约束力
-        forcesNorm = self.rootNode.GCS.constraintForces.value
-        acc=0.0
-        for i in forcesNorm:
-            if i>0:
-                print("heureka")
-                print(i)
-                acc+=i
-        print(f'Sum of Forces: {acc}')
-        """
-def calcNormalVec(node):
-    sphere_constraint =node.rigidobject.constraint.value
-    sphere_dt = node.parent.dt.value
-    sphere_constraintMatrixInline = np.fromstring(sphere_constraint, sep='  ')
-    # print("sphere_constraintMatrixInline:", sphere_constraintMatrixInline)
 
-    sphere_pointId = []
-    sphere_constraintId = []
-    sphere_constraintDirections = []
-    sphere_index = 0
-    i=0
-
-    # 获取约束力
-    forcesNorm = node.parent.GCS.constraintForces.value
-    print(forcesNorm)
-    
-    # 在 onAnimateEndEvent 中的现有代码基础上，添加总力累加变量
-    contactforce_x = 0
-    contactforce_y = 0
-    contactforce_z = 0
-
-
-    # 解析约束矩阵
-    while sphere_index < len(sphere_constraintMatrixInline):
-        currConstraintID=int(sphere_constraintMatrixInline[sphere_index])
-        nbConstraint = int(sphere_constraintMatrixInline[sphere_index + 1])
-        for pts in range(nbConstraint):
-            currIDX=sphere_index+2+pts*4
-            sphere_pointId=np.append(sphere_pointId,sphere_constraintMatrixInline[currIDX])
-            sphere_constraintId.append(currConstraintID)
-            sphere_constraintDirections.append([sphere_constraintMatrixInline[currIDX+1],sphere_constraintMatrixInline[currIDX+2],sphere_constraintMatrixInline[currIDX+3]])
-        sphere_index=sphere_index+2+nbConstraint*4
-
-    sphere_nbDofs = len(sphere_constraint)
-    sphere_forces = np.zeros((sphere_nbDofs, 3))
-
-    print(f"Parsed Point IDs: {sphere_pointId}")
-    print(f"Parsed Constraint Directions: {sphere_constraintDirections}")
-    print(f"forcesNorm: {forcesNorm}")
-
-    # 计算并累加力
-    for i in range(len(sphere_pointId)):
-        indice = int(sphere_pointId[i])
-        #print(f"Calculating force for point {indice}")
-
-        sphere_forces[indice][0] += sphere_constraintDirections[i][0] * forcesNorm[sphere_constraintId[i]] / sphere_dt
-        sphere_forces[indice][1] += sphere_constraintDirections[i][1] * forcesNorm[sphere_constraintId[i]] / sphere_dt
-        sphere_forces[indice][2] += sphere_constraintDirections[i][2] * forcesNorm[sphere_constraintId[i]] / sphere_dt
-        #print(f"Force on point {indice}: {sphere_forces[indice]}")
-
-        # print('indice',i,indice)
-    # 累加总力
-    for i in range(sphere_nbDofs):
-        contactforce_x += sphere_forces[i][0]
-        contactforce_y += sphere_forces[i][1]
-        contactforce_z += sphere_forces[i][2]
-        #print(f"Accumulated force on DOF {i}: ({contactforce_x}, {contactforce_y}, {contactforce_z})")
-
-    # 输出总力
-    # print('nbDof', sphere_nbDofs)
-    # print('force', sphere_forces)
-    print('contactforce', contactforce_x, contactforce_y, contactforce_z)
-    return contactforce_x, contactforce_y, contactforce_z
-def findClosestVerts(verts, pos, num_closest=3):
+def findClosestVerts(verts, pos, num_closest=1):
     # Calculate distances from the position to each vertex
     distances = [(i, (v[0] - pos[0])**2 + (v[1] - pos[1])**2 + (v[2] - pos[2])**2) for i, v in enumerate(verts)]
     
@@ -153,31 +59,12 @@ def findClosestVerts(verts, pos, num_closest=3):
     
     return closest_verts
 mesh=None
-def exportMesh(oglModel):
+def exportMesh(node):
     global mesh
-    triangles=oglModel.triangles.value
-    positions=oglModel.position.value
+    triangles=node.tissue.visual.VMapping.output.triangles.value
+    positions=node.tissue.visual.VMapping.output.position.value
     mesh=trimesh.Trimesh(vertices=positions, faces=triangles)
     return mesh,triangles,positions
-def spherical_uv_mapping(vertices):
-    # Get the x, y, z coordinates
-    x = vertices[:, 0]
-    y = vertices[:, 1]
-    z = vertices[:, 2]
-
-    # Calculate spherical coordinates (r, theta, phi)
-    r = np.sqrt(x**2 + y**2 + z**2)
-    theta = np.arctan2(y, x)  # Longitude (-π to π)
-    phi = np.arccos(z / r)     # Latitude (0 to π)
-
-    # Normalize theta and phi to be in [0, 1] for UV mapping
-    u = (theta + np.pi) / (2 * np.pi)  # Map theta from [-π, π] to [0, 1]
-    v = phi / np.pi                    # Map phi from [0, π] to [0, 1]
-
-    # Stack u and v coordinates into a UV array
-    uv_coords = np.stack((u, v), axis=-1)
-    
-    return uv_coords
 def faceNormal(points):
     p1, p2, p3 = points
     
@@ -202,16 +89,20 @@ def baseNormalVec(node,XYZ=None):
     posOffset=[0.025,0.0,0.0]
     old_y=[0.0,0.0,0.0]
     nodePos=transform_to_global(posOffset,node.getAngles(),node.transformWrapper.getPosition())
-    verticesTissue=node.tissue.visual.VisualModel.position.value
-    trianglesTissue=node.tissue.visual.VisualModel.triangles.value
+    verticesTissue=node.tissue.visual.VMapping.output.position.value
+    trianglesTissue=node.tissue.visual.VMapping.output.triangles.value
     tissueVerts=findClosestVerts(verticesTissue,[nodePos[0],nodePos[1],nodePos[2]])
-    
+    """
+    this is to prevent sensor clipping into the tissue mesh and not getting out
     if mesh.contains([nodePos]):
         node.forceApply*=0.5
         k=node.transformWrapper.getPosition()
         node.transformWrapper.setPosition([k[0]-0.001*old_y[0],k[1]-0.001*old_y[1],k[2]-0.001*old_y[2]])
         return old_y[0],old_y[1],old_y[2]
-    normalized_y=faceNormal(tissueVerts)
+    """
+    y = nodePos - tissueVerts[0]
+    normalized_y=y/np.linalg.norm(y)
+    #alternative: normalized_y=faceNormal(tissueVerts)
     if XYZ is None:
         return normalized_y[0],normalized_y[1],normalized_y[2]
     #finde y and z that are orthogonal to x
@@ -221,9 +112,6 @@ def baseNormalVec(node,XYZ=None):
     normalized_z= z / np.sqrt(np.sum(z**2))
     l=[normalized_x,normalized_y,normalized_z]
     ret=[0.0,0.0,0.0]
-    print(f'Y {normalized_y}')
-    print(f'X {normalized_x}')
-    print(f'Z {normalized_z}')
     for i in range(len(XYZ)):
         for j in range(len(l[i])):
             ret[j]+=XYZ[i]*l[i][j]
@@ -237,6 +125,7 @@ class TactoController(Sofa.Core.Controller):
         plugins=['SofaRigid']
         plugins.append('SofaConstraint')
         plugins.append('SofaImplicitOdeSolver')
+        plugins.append('Sofa.Component.Haptics')
         node.addObject('EulerImplicitSolver', name="cg_odesolver")
         node.addObject("CGLinearSolver",iterations=20, tolerance=1e-2, threshold=1e-2)
         node.addObject('RequiredPlugin', pluginName=plugins)
@@ -258,14 +147,15 @@ class TactoController(Sofa.Core.Controller):
     def onAnimateEndEvent(self, __):
         nr_contacts=self.listener.getNumberOfContacts()
         base_mesh=self.parent.meshLoaderFine.position.value
-        
-        mesh=exportMesh(self.tissue.visual.VisualModel)
+        mesh=exportMesh(self)
         self.contacts=nr_contacts
         #print(self.rigidobject.velocity.value)
         #print(nr_contacts)
-        x,y,z=baseNormalVec(self)
-        self.node.CFF.totalForce.value=[x*self.forceApply, y*self.forceApply, z*self.forceApply, 0, 0, 0]
-        self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
+        
+        if self.useForce:
+            x,y,z=baseNormalVec(self)
+            self.node.CFF.totalForce.value=[x*self.forceApply, y*self.forceApply, z*self.forceApply, 0, 0, 0]
+        #self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
         if nr_contacts==0:
             #print("HOW AM I HERE")
             #self.rigidobject.velocity.value = [0,0,0]
@@ -290,9 +180,10 @@ class TactoController(Sofa.Core.Controller):
         self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
         self.node.CFF.totalForce.value=[0, 0, 0, 0, 0, 0]
         self.forceApply=0.0
-    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue,stiffness=5.0,senderD=None):
+    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue,stiffness=5.0,senderD=None,useForce:bool =False):
         Sofa.Core.Controller.__init__(self)
         self.iteration = 0
+        self.useForce=useForce
         self.parent=parent
         self.dataSender=senderD
         self.stiffness=stiffness
@@ -305,6 +196,8 @@ class TactoController(Sofa.Core.Controller):
         self.node.addObject("UniformMass",vertexMass=[1., 1., [1., 0., 0., 0., 1., 0., 0., 0., 1.][:]])
         self.addVisuals(self.node)
         self.collision=self.addCollision(self.node)
+        self.node.addObject("RestShapeSpringsForceField",stiffness='100000',angularStiffness='100000',external_rest_shape='@TactoMechanics',points='0',external_points='0')
+        #self.node.addObject("LCPForceFeedback",name="LPCs",forceCoef="1.0")
         tissue.node.getChild("Collision").getObject("CollisionModel")
         self.tissue=tissue
         self.listener = self.node.addObject(
@@ -319,8 +212,9 @@ class TactoController(Sofa.Core.Controller):
         self.scale=0.01
         self.transformWrapper=RigidDof(self.rigidobject)
         self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles())
-        self.node.addObject('UncoupledConstraintCorrection')
+        
         self.node.addObject('ConstantForceField', name="CFF", totalForce=[0.0, 0.0, 0.0, 0, 0, 0, 0])
+        self.node.addObject('UncoupledConstraintCorrection')
         self.mode=0
         self.modeSelect=['Translate','Rotate','Scale']
         self.ModeDict = {'Translate' : self.trans,
@@ -337,6 +231,7 @@ class TactoController(Sofa.Core.Controller):
     def degtoRad(self,angle):
         return angle*math.pi/180
     def trans(self):
+        global noforce
         t=self.transformWrapper.getPosition()
         """
         print(f' Position before: {t}')
@@ -349,7 +244,7 @@ class TactoController(Sofa.Core.Controller):
     
         print(f' Position after: {t1}')
         """
-        if self.contacts==0:
+        if self.contacts==0 or not self.useForce:##use normal translations when 
             print(f'Position before: {t}')
             if self.key=='+':
                 self.transformWrapper.setPosition([t[0]+self.XYZ[0]*self.scale, t[1]+self.XYZ[1]*self.scale, t[2]+self.XYZ[2]*self.scale])

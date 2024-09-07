@@ -39,8 +39,8 @@ class Environment():
         'Sofa.Component.Visual',
         'Sofa.GL.Component.Rendering3D',
         'Sofa.Component.MechanicalLoad',
-        'Sofa.Component.ODESolver.Forward'
-        ])
+        'Sofa.Component.ODESolver.Forward',
+        'Sofa.Component.Haptics'])
         self.root.addObject('VisualStyle', displayFlags="showVisual showCollisionModels showForceFields")
         self.root.addObject('CollisionPipeline', verbose=0,draw=0,depth=2)
         self.root.addObject('BruteForceDetection', name="BruteForceBroadPhase")

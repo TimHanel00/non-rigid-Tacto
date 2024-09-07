@@ -182,6 +182,7 @@ class Tissue(Sofa.Core.Controller):
         # Solver
         self.node.addObject('EulerImplicitSolver', name="cg_odesolver")
         self.node.addObject("CGLinearSolver",iterations=20, tolerance=1e-2, threshold=1e-2)
+        #self.node.addObject("PrecomputedConstraintCorrection")
         """
         add_solver( parent_node=self.node, 
                     analysis_type=analysis, 

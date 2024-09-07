@@ -114,8 +114,7 @@ def createScene(root,dataSend):
     #print(type(tissue))
     #createCollisionMesh(root)
     print(type(root))
-    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed2.stl",senderD=dataSend,parent=root,tissue=tissue))
-    root.addObject(ForcesController(name="ForceController", rootNode=root))
+    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed2.stl",senderD=dataSend,parent=root,tissue=tissue,useForce=True))
     return root
 def sofaSimLoop(root,sendConn):
     
