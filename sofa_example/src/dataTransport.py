@@ -2,7 +2,7 @@ import threading
 from multiprocessing import Pipe
 from time import sleep
 class TransportData:
-    def __init__(self, position=None, orientation=None, forces=None,tissuePos=None,tissueOr=None):
+    def __init__(self, position=None, orientation=None, forces=None,tissuePos=None,tissueOr=None,mesh=None):
         if position is None:
             position = [0, 0, 0]
         if orientation is None:
@@ -18,6 +18,7 @@ class TransportData:
         self.tissuePos=tissuePos
         self.tissueOr=tissueOr
         self.normalForces = forces
+        self.mesh=mesh
         
 
     def __repr__(self):
@@ -48,8 +49,8 @@ class Sender(threading.Thread):
         self.curData = TransportData()
         self.running = True
 
-    def update(self, pos, orientation, forces=None):
-        self.curData = TransportData(pos, orientation, forces,self.curData.tissuePos,self.curData.tissueOr)
+    def update(self, pos, orientation, forces=None,mesh=None):
+        self.curData = TransportData(pos, orientation, forces,self.curData.tissuePos,self.curData.tissueOr,mesh)
     def updateTissue(self, tissuePos,tissueOr):
         self.curData = TransportData(self.curData.position, self.curData.orientation, self.curData.normalForces,tissuePos,tissueOr)
     def run(self):
