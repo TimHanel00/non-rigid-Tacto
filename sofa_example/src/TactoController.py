@@ -10,6 +10,7 @@ import numpy as np
 from stl import mesh
 import trimesh
 import heapq
+from enum import Enum,auto
 def readMesh():
     your_mesh = mesh.Mesh.from_file('mesh/.stl')
 
@@ -117,6 +118,25 @@ def baseNormalVec(node,XYZ=None):
             ret[j]+=XYZ[i]*l[i][j]
     old_y=normalized_y
     return ret
+forceY=[]
+class ControllMode(Enum):
+    
+    forceField :int =1
+    #
+    position : int =2
+    #directed towards the surface of the mesh
+    directedForceField : int = 3 
+    forceFieldAtContact : int = 4
+    directedForceFieldAtContact : int =5
+class ForceMode(Enum):
+    # use Y force  
+    dof : int = 1
+    # use GenericConstraintSolver output of to accumulate normalforces 
+    # (impact of certain forcefield might not be included)
+    normal : int =2
+    #approximate force based on nr of vertices in contact
+    vertex : int = 3
+
 class TactoController(Sofa.Core.Controller):
     """ This controller monitors new sphere objects.
     Press ctrl and the L key to make spheres falling!
@@ -144,46 +164,61 @@ class TactoController(Sofa.Core.Controller):
         #collision.addObject('PointCollisionModel')
         collision.addObject('RigidMapping')
         return collision
-    def onAnimateEndEvent(self, __):
-        nr_contacts=self.listener.getNumberOfContacts()
-        base_mesh=self.parent.meshLoaderFine.position.value
-        mesh=exportMesh(self)
-        self.contacts=nr_contacts
-        #print(self.rigidobject.velocity.value)
-        #print(nr_contacts)
-        
-        if self.useForce:
-            x,y,z=baseNormalVec(self)
-            self.node.CFF.totalForce.value=[x*self.forceApply, y*self.forceApply, z*self.forceApply, 0, 0, 0]
-        #self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
-        if nr_contacts==0:
-            #print("HOW AM I HERE")
-            #self.rigidobject.velocity.value = [0,0,0]
-            
-            k=self.node.CFF.totalForce.value
-            self.forceApply=0.0
-            #print(f' Force before: {k}')
-            self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
-            self.node.CFF.totalForce.value=[0, 0, 0, 0, 0, 0]
-            #print(f' Force after: {self.node.CFF.totalForce.value}')
+    def getDofForce(self):
+        force= self.rigidobject.force.array()
+        forceRet=0.0
+        for dof in force:
+            forceRet+=(np.sum(np.array(dof))/len(dof))
+        self.forceBuf.append(forceRet)
+        if len(self.forceBuf)==4:
+            self.forceBuf.pop(0)
+            return np.sum(np.array(self.forceBuf))# use the last three force messurements to smooth out the data delivered to tacto
+        return self.forceBuf[0]
+    def getNormalForce(self):
         forcesNorm = self.parent.GCS.constraintForces.value
         acc=0.0
         for i in forcesNorm:
             if i>0:
                 acc+=i
+        return acc*100
+    #approximate force based on nr of vertices in contact
+    def getCollisionEstimatedForce(self):
+        nr_contacts=self.listener.getNumberOfContacts()
+        self.contacts=nr_contacts
         nr_contacts/=50
         if nr_contacts>100:
             nr_contacts=100
-        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles(),acc*100,mesh)
+        return nr_contacts
+    def onAnimateEndEvent(self, __):
+        
+        if self.controllMode==ControllMode.directedForceFieldAtContact:
+            x,y,z=baseNormalVec(self)
+            self.node.CFF.totalForce.value=[x*self.forceApply, y*self.forceApply, z*self.forceApply, 0, 0, 0]
+        if self.controllMode==ControllMode.forceFieldAtContact or self.controllMode==ControllMode.directedForceFieldAtContact:
+            self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
+            if self.listener.getNumberOfContacts()==0:
+                #print("HOW AM I HERE")
+                #self.rigidobject.velocity.value = [0,0,0]
+                
+                k=self.node.CFF.totalForce.value
+                self.forceApply=0.0
+                #print(f' Force before: {k}')
+                self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
+                self.node.CFF.totalForce.value=[0, 0, 0, 0, 0, 0]
+                #print(f' Force after: {self.node.CFF.totalForce.value}')
+        
+        
+        sendForce=self.forceDict[self.forceMode]
+        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles(),sendForce,mesh=exportMesh(self))
     def reset(self):
         self.transformWrapper.setPosition([0.0, 0.13, 0, 0, 0, -0.7071068, 0.7071068])
         self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
         self.node.CFF.totalForce.value=[0, 0, 0, 0, 0, 0]
         self.forceApply=0.0
-    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue,stiffness=5.0,senderD=None,useForce:bool =False):
+    def __init__(self, name:str,meshfile : str,parent:Sofa.Core.Node,tissue,stiffness=5.0,senderD=None, forceMode :ForceMode=ForceMode.dof, controllMode:ControllMode=ControllMode.position ):
         Sofa.Core.Controller.__init__(self)
         self.iteration = 0
-        self.useForce=useForce
+        self.forceMode=forceMode
         self.parent=parent
         self.dataSender=senderD
         self.stiffness=stiffness
@@ -196,7 +231,7 @@ class TactoController(Sofa.Core.Controller):
         self.node.addObject("UniformMass",vertexMass=[1., 1., [1., 0., 0., 0., 1., 0., 0., 0., 1.][:]])
         self.addVisuals(self.node)
         self.collision=self.addCollision(self.node)
-        self.node.addObject("RestShapeSpringsForceField",stiffness='100000',angularStiffness='100000',external_rest_shape='@TactoMechanics',points='0',external_points='0')
+        #self.node.addObject("RestShapeSpringsForceField",stiffness='100000',angularStiffness='100000',external_rest_shape='@TactoMechanics',points='0',external_points='0')
         #self.node.addObject("LCPForceFeedback",name="LPCs",forceCoef="1.0")
         tissue.node.getChild("Collision").getObject("CollisionModel")
         self.tissue=tissue
@@ -206,16 +241,20 @@ class TactoController(Sofa.Core.Controller):
             collisionModel2=self.collision.getObject('TriangleCollisionModel').getLinkPath(),
         )
         self.forceApply=10000.0
+        self.forceBuf=[]
         self.key=""
         self.XYZ=[1.0,0.0,0.0]
         self.scaleIncr=0.1
         self.scale=0.01
         self.transformWrapper=RigidDof(self.rigidobject)
         self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles())
-        
+        self.controllMode=controllMode
+        if self.controllMode==ControllMode.position:
+            self.node.addObject('FixedConstraint', name="FixedConstraint", indices="0")
         self.node.addObject('ConstantForceField', name="CFF", totalForce=[0.0, 0.0, 0.0, 0, 0, 0, 0])
         self.node.addObject('UncoupledConstraintCorrection')
         self.mode=0
+        self.forceDict={ForceMode.dof:self.getDofForce,ForceMode.normal:self.getNormalForce,ForceMode.vertex:self.getCollisionEstimatedForce}
         self.modeSelect=['Translate','Rotate','Scale']
         self.ModeDict = {'Translate' : self.trans,
            'Rotate' : self.rot,
@@ -230,51 +269,46 @@ class TactoController(Sofa.Core.Controller):
          return (angle*180)/math.pi
     def degtoRad(self,angle):
         return angle*math.pi/180
-    def trans(self):
-        global noforce
+    def changePos(self):
         t=self.transformWrapper.getPosition()
-        """
-        print(f' Position before: {t}')
+        print(f'Position before: {t}')
         if self.key=='+':
             self.transformWrapper.setPosition([t[0]+self.XYZ[0]*self.scale, t[1]+self.XYZ[1]*self.scale, t[2]+self.XYZ[2]*self.scale])
         if self.key=='-':
             x=t[0]-self.XYZ[0]*self.scale
             self.transformWrapper.setPosition([t[0]-self.XYZ[0]*self.scale, t[1]-self.XYZ[1]*self.scale, t[2]-self.XYZ[2]*self.scale])
         t1=self.transformWrapper.getPosition()
-    
-        print(f' Position after: {t1}')
-        """
-        if self.contacts==0 or not self.useForce:##use normal translations when 
-            print(f'Position before: {t}')
-            if self.key=='+':
-                self.transformWrapper.setPosition([t[0]+self.XYZ[0]*self.scale, t[1]+self.XYZ[1]*self.scale, t[2]+self.XYZ[2]*self.scale])
-            if self.key=='-':
-                x=t[0]-self.XYZ[0]*self.scale
-                self.transformWrapper.setPosition([t[0]-self.XYZ[0]*self.scale, t[1]-self.XYZ[1]*self.scale, t[2]-self.XYZ[2]*self.scale])
-            t1=self.transformWrapper.getPosition()
-            print(f'Position after: {t1}')
-        else:
-            k=self.node.CFF.totalForce.value
-            #x,y,z=calcNormalVec(self)
-            if self.XYZ[1]==1.0:
-                print(self.forceApply)
-                if self.key=='+':
-                    self.forceApply+=self.scale*100
-                if self.key=='-':
-                    self.forceApply-=self.scale*100
+        print(f'Position after: {t1}')
+    def applyForce(self,vec):
+        ar=[]
+        if self.key=='+':
+                for i in vec:
+                    ar.append(vec[i]*vec[0]*self.scale*100)
+        if self.key=='-':
+                for i in vec:
+                    ar.append(-vec[i]*vec[0]*self.scale*100)
+        self.node.CFF.totalForce.value=ar
+    def trans(self):
+        if self.controllMode==ControllMode.forceField:
+            self.applyForce(self.XYZ+[0,0,0])
+            return 
+
+        if self.controllMode==ControllMode.directedForceField:
+            x,y,z=baseNormalVec(self,self.XYZ)
+            self.applyForce([x,y,z,0,0,0])
+        if self.controllMode==ControllMode.position:
+            self.changePos()
+        if self.controllMode==ControllMode.forceFieldAtContact:
+            if self.contacts==0:
+                self.changePos()
+            else:
+                self.applyForce(self.XYZ+[0,0,0])
+        if self.controllMode==ControllMode.directedForceFieldAtContact:
+            if self.contacts==0:
+                self.changePos()
             else:
                 x,y,z=baseNormalVec(self,self.XYZ)
-                if self.key=='+':
-                    self.node.CFF.totalForce.value=[x*self.scale*10000,y*self.scale*10000,z*self.scale*10000,0,0,0]
-                if self.key=='-':
-                    self.node.CFF.totalForce.value=[-x*self.scale*10000,-y*self.scale*10000,-z*self.scale*10000,0,0,0]
-                """
-                if self.key=='+':
-                    self.node.CFF.totalForce.value = [k[0]+self.XYZ[0]*self.scale*100,k[1]+self.XYZ[1]*self.scale*100,k[2]+self.XYZ[2]*self.scale*100,k[3],k[4],k[5]]
-                if self.key=='-':
-                    self.node.CFF.totalForce.value = [k[0]-self.XYZ[0]*self.scale*100,k[1]-self.XYZ[1]*self.scale*100,k[2]-self.XYZ[2]*self.scale*100,k[3],k[4],k[5]]
-                """
-                print(f'Force after: {self.node.CFF.totalForce.value}')
+                self.applyForce([x,y,z,0,0,0])
     def scaleF(self):
         scalebef=self.scale
         print(self.scaleIncr)
@@ -298,6 +332,13 @@ class TactoController(Sofa.Core.Controller):
         eulerAngles= Quat(self.transformWrapper.getOrientation().tolist()).getEulerAngles()
         return [round(self.radTodeg(el),4) for el in eulerAngles]
     def rot(self):
+        if self.controllMode==ControllMode.forceField or self.controllMode==ControllMode.directedForceField:
+            self.applyForce([0,0,0]+self.XYZ)
+            return 
+        if self.controllMode==ControllMode.directedForceFieldAtContact or self.controllMode==ControllMode.forceFieldAtContact:
+            if self.contacts!=0:
+                self.applyForce([0,0,0]+self.XYZ)
+            return 
         print(f'Angles before Rotate: {self.getAngles()}')
         #axis=[int(self.XYZ[0]),int(self.XYZ[1]),int(self.XYZ[2])]
         val=100*self.scale

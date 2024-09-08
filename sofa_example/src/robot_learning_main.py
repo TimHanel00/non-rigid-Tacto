@@ -7,7 +7,7 @@ import SofaRuntime, Sofa.Core,Sofa.Gui
 from core.sofa.objects.tissue import Tissue
 from core.sofa.components.forcefield import Material, ConstitutiveModel
 from core.sofa.components.solver import SolverType, TimeIntegrationType
-from TactoController import TactoController, ForcesController
+from TactoController import TactoController
 import SofaRootConfig
 from multiprocessing import Process, Pipe
 from threading import Thread
@@ -114,7 +114,7 @@ def createScene(root,dataSend):
     #print(type(tissue))
     #createCollisionMesh(root)
     print(type(root))
-    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed2.stl",senderD=dataSend,parent=root,tissue=tissue,useForce=True))
+    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed2.stl",senderD=dataSend,parent=root,tissue=tissue,useForce=False))
     return root
 def sofaSimLoop(root,sendConn):
     
