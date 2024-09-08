@@ -12,6 +12,7 @@ class drawForces(Sofa.Core.Controller):
         self.rootNode = kwargs.get("rootNode")
 
     def onAnimateEndEvent(self, event):
+
         # Process forces on the Sphere
         try:
             sphere_constraint = self.rootNode.Sphere.collision.MechanicalObject.constraint.value
@@ -117,7 +118,7 @@ def createCollisionMesh(rootNode):
     collision.addObject("BarycentricMapping", name="CollisionMapping", input="@../", output="@StoringForces")
 
     # Add ConstraintCorrection to ensure forces are correctly applied
-    # liver.addObject('UncoupledConstraintCorrection')
+    liver.addObject('UncoupledConstraintCorrection')
 
 def createSphere(rootNode):
     sphere = Sphere(
@@ -130,6 +131,7 @@ def createSphere(rootNode):
     )
     sphere.addObject('UncoupledConstraintCorrection')
     Force = sphere.addObject('ConstantForceField', name="CFF", totalForce=[0, -1.0, 0, 0, 0, 0, 0])
+
 
 
 def createScene(rootNode):
@@ -155,17 +157,18 @@ def createScene(rootNode):
         'Sofa.Component.Visual',
         'Sofa.GL.Component.Rendering3D',
         'Sofa.Component.MechanicalLoad',
-        'Sofa.Component.ODESolver.Forward'
+        'Sofa.Component.ODESolver.Forward',
+        'SofaValidation'
     ])
     # root.addObject('VisualStyle', displayFlags='showVisual showCollisionModels showWireframe showInteractionForceFields showForceFields')
-    rootNode.addObject('VisualStyle', displayFlags='showVisual showCollisionModels showWireframe showInteractionForceFields showForceFields')
+    rootNode.addObject('VisualStyle', displayFlags=' showCollisionModels   showForceFields')
     rootNode.addObject('CollisionPipeline', verbose=0, draw=0)
     rootNode.addObject('BruteForceDetection', name="BruteForceBroadPhase")
     rootNode.addObject('NewProximityIntersection', name="Proximity", alarmDistance=0.5, contactDistance=0.001)
-    rootNode.addObject('CollisionResponse', name="CollisionResponse", response="FrictionContactConstraint")
+    rootNode.addObject('CollisionResponse', name="CollisionResponse", response="PenalityContactForceField")
     rootNode.addObject('FreeMotionAnimationLoop')
     rootNode.addObject('GenericConstraintSolver', name="GCS", maxIt=1000, tolerance=1e-6, computeConstraintForces=True)
-    rootNode.addObject('DefaultContactManager', name='Response', response='FrictionContactConstraint')
+    rootNode.addObject('DefaultContactManager', name='Response', response='PenalityContactConstraint')
     rootNode.dt = 0.01
     rootNode.gravity = [0., 0., 0.]
     createCollisionMesh(rootNode)

@@ -4,6 +4,26 @@ import Sofa
 import SofaRuntime
 import Sofa.Gui
 
+class ForceOutputController(Sofa.Core.Controller):
+    def __init__(self, rootNode):
+        Sofa.Core.Controller.__init__(self)
+        self.rootNode = rootNode
+
+    def onAnimateBeginEvent(self, event):
+        # Retrieve the forces applied to the sphere at the beginning of each time step
+        forces = self.get_sphere_force()
+        print(f"Current forces on sphere: {forces}")
+
+    def get_sphere_force(self):
+        # Get the sphere node
+        sphere_node = self.rootNode.getChild('FallingSphere-')
+        # Get the MechanicalObject representing the sphere
+        MO = sphere_node.getObject('Particle-')
+        # Retrieve the forces acting on the sphere and convert it to an array
+        forces = MO.force.array()  # Convert DataContainer to an array
+        return forces
+
+
 
 def surfModel(root):
     root.addObject('MeshObjLoader', name="LiverSurface", filename="mesh/liver-smooth.obj")
@@ -164,11 +184,16 @@ def main():
     createScene(root)
     Sofa.Simulation.init(root)
 
+    # Add a custom controller to output the forces
+    root.addObject(ForceOutputController(root))
+
     Sofa.Gui.GUIManager.Init("myscene", "qglviewer")
     Sofa.Gui.GUIManager.createGUI(root, __file__)
     Sofa.Gui.GUIManager.SetDimension(1080, 1080)
     Sofa.Gui.GUIManager.MainLoop(root)
     Sofa.Gui.GUIManager.closeGUI()
+
+
 
 
 if __name__ == '__main__':
