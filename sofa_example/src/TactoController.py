@@ -11,6 +11,7 @@ from stl import mesh
 import trimesh
 import heapq
 from enum import Enum,auto
+import cProfile
 def readMesh():
     your_mesh = mesh.Mesh.from_file('mesh/.stl')
 
@@ -173,6 +174,7 @@ class TactoController(Sofa.Core.Controller):
         if len(self.forceBuf)==4:
             self.forceBuf.pop(0)
             return np.sum(np.array(self.forceBuf))# use the last three force messurements to smooth out the data delivered to tacto
+        
         return self.forceBuf[0]
     def getNormalForce(self):
         forcesNorm = self.parent.GCS.constraintForces.value
@@ -208,7 +210,7 @@ class TactoController(Sofa.Core.Controller):
                 #print(f' Force after: {self.node.CFF.totalForce.value}')
         
         
-        sendForce=self.forceDict[self.forceMode]
+        sendForce=self.forceDict[self.forceMode]()
         self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles(),sendForce,mesh=exportMesh(self))
     def reset(self):
         self.transformWrapper.setPosition([0.0, 0.13, 0, 0, 0, -0.7071068, 0.7071068])
@@ -240,6 +242,7 @@ class TactoController(Sofa.Core.Controller):
             collisionModel1=tissue.node.getChild("Collision").getObject("CollisionModel").getLinkPath(),
             collisionModel2=self.collision.getObject('TriangleCollisionModel').getLinkPath(),
         )
+        #cProfile.run('self.onAnimateEndEvent()')
         self.forceApply=10000.0
         self.forceBuf=[]
         self.key=""
