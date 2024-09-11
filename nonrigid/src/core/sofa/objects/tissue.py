@@ -162,7 +162,7 @@ class Tissue(Sofa.Core.Controller):
         pos=self.transformWrapper.getPosition()
         angles=self.getAngles()
         if self.dataSender is not None:
-            self.dataSender.updateTissue(pos,angles)
+            self.dataSender.update("Tissue",pos,angles)
         self.fem = add_forcefield( parent_node=self.node,
                                     material=material,
                                     topology=topology_type,
@@ -250,7 +250,7 @@ class Tissue(Sofa.Core.Controller):
         pos=self.transformWrapper.getPosition()
         angles=self.getAngles()
         if self.dataSender is not None:
-            self.dataSender.updateTissue(pos,angles)
+            self.dataSender.update("Tissue",pos,angles)
         return
         if(self.check_displacement):
             #print(type(self.state.position))

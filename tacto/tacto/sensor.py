@@ -42,6 +42,57 @@ def swap(l1,i,l2,j):
 def degtoRad(angle):
     import math
     return angle*math.pi/180
+def register(linkobj,dataReceive):
+    if linkobj.sofaName=="":
+            for obj in dataReceive.get().tolist():
+                if obj.name=="Tissue" and linkobj.obj_id==2:
+                    linkobj.sofaName=obj.name
+                if obj.name=="Sensor" and linkobj.link_id==-1 and linkobj.obj_id==1:
+                    linkobj.sofaName=obj.name
+def getSofaName(linkobj):
+    if linkobj.link_id==-1 and linkobj.obj_id==1:
+        return "Sensor"
+    if linkobj.obj_id==2:
+        return "Tissue"
+    return ""
+def tissueHandle(link,sofaObject,pos,orient):
+    link.mesh=sofaObject.mesh
+    if(link.initSofaPos is None  and round(pos[0],3)!=0):
+        link.initSofaPos=pos
+    if link.initSofaPos is not None:
+        pos=[y-x for x,y in zip(pos,link.initSofaPos)]
+    pos=(pos[0],pos[1],pos[2]+2)
+    if link.mesh is not None:
+        #print("updatingMesh")
+        
+        
+        #print(self.mesh)
+        vertices = link.mesh.vertices.tolist()  # Convert to list
+        indices = link.mesh.faces.flatten().tolist()     # Convert to list
+        #print(vertices)
+        #print(indices)
+        new_visual_shape = p.createVisualShape(
+            shapeType=p.GEOM_MESH, 
+            vertices=vertices, 
+            indices=indices
+        )
+        new_collision_shape = p.createCollisionShape(shapeType=p.GEOM_MESH, vertices=vertices, 
+            indices=indices)
+        old_id=link.pybullet_id
+
+        link.pybullet_id = p.createMultiBody(basePosition=pos,baseOrientation=orient,baseVisualShapeIndex=new_visual_shape, baseCollisionShapeIndex=new_collision_shape)
+        from time import sleep
+        sleep(0.01)
+        p.removeBody(old_id)
+                
+    return pos,orient 
+def sensorHandle(link,pos,orient):
+    pos=(pos[0],pos[1],pos[2]+2)
+    p.resetBasePositionAndOrientation(link.obj_id, pos, p.getQuaternionFromEuler(orient))
+    return pos,orient
+def default(link,pos,orient):
+    return pos,orient
+costumFctDict={"Sensor":sensorHandle,"Tissue":tissueHandle,"":default}
 @dataclass
 class Link:
     obj_id: int  # ID used for Tacto (pyrender and initially pybullet)
@@ -50,12 +101,12 @@ class Link:
     internalPos=None
     internalRot=None
     initSofaPos=None
-    lastSofaPos=None
-    lastSofaRot=None
     force=None
     mesh=None
+    sofaName=""
     pybullet_id: int #ID used explicitly for pybullet
-    def get_pose(self,dataReceive):
+    def get_pose(self,dataReceive=None):
+        global costumFctDict
         p.setRealTimeSimulation(0)
         if self.link_id < 0:
             # get the base pose if link ID < 0
@@ -87,70 +138,26 @@ class Link:
         #print(str(position)+ " 1")
         pos=None
         orient=None
-        self.force=dataReceive.get().normalForces
-        from time import sleep
-        if(self.link_id==-1 and self.obj_id==1):# sensor
+        self.sofaName=getSofaName(self)
+        if dataReceive==None:
+            return position, orientation
+        if dataReceive.latest_data is None:
+            return position, orientation
+        if dataReceive.tolist() is None:
+            return position, orientation
+        if self.sofaName not in dataReceive.tolist():
+            return position, orientation
+        sofaObject=dataReceive.get(self.sofaName)
             
-            pos=dataReceive.get().position
-            
-            orient=[degtoRad(i) for i in dataReceive.get().orientation]
-        if(self.obj_id==2):# tissue
-            pos=dataReceive.get().tissuePos
-            self.mesh=dataReceive.get().mesh
-            if(self.initSofaPos is None  and round(pos[0],3)!=0):
-                self.initSofaPos=pos
-            if self.initSofaPos is not None:
-                pos=[y-x for x,y in zip(pos,self.initSofaPos)]
-            orient=[degtoRad(i) for i in dataReceive.get().tissueOr]
-            pos=(pos[0],pos[1],pos[2]+2)
-            if self.mesh is not None:
-                #print("updatingMesh")
-                
-                
-                #print(self.mesh)
-                vertices = self.mesh[0].vertices.tolist()  # Convert to list
-                indices = self.mesh[0].faces.flatten().tolist()     # Convert to list
-                #print(vertices)
-                #print(indices)
-                new_visual_shape = p.createVisualShape(
-                    shapeType=p.GEOM_MESH, 
-                    vertices=vertices, 
-                    indices=indices
-                )
-                new_collision_shape = p.createCollisionShape(shapeType=p.GEOM_MESH, vertices=vertices, 
-                    indices=indices)
-                old_id=self.pybullet_id
-
-                self.pybullet_id = p.createMultiBody(basePosition=pos,baseOrientation=orient,baseVisualShapeIndex=new_visual_shape, baseCollisionShapeIndex=new_collision_shape)
-                sleep(0.01)
-                p.removeBody(old_id)
-                
-                return pos,orient
-        pos=(pos[0],pos[1],pos[2]+2)
-        p.resetBasePositionAndOrientation(self.obj_id, pos, p.getQuaternionFromEuler(orient))
-        self.lastSofaRot=orient
-        self.lastSofaPos=pos
-        return pos,orient
-        """
-        pos=dataReceive.get().tissuePos
-        orient=dataReceive.get().tissueOr
-        if self.initSofaPos is None and pos is not None:
-            self.initSofaPos=pos
-            self.initSofaRot=orient
-        dSofaPos=[-x+y for x,y in zip(self.initSofaPos,pos)]
-        dSofaOr=[-x+y for x,y in zip(self.initSofaRot,pos)]
-        position=[x+y for x,y in zip(self.internalPos,dSofaPos)]
-        orientation=[x+y for x,y in zip(self.internalRot,dSofaOr)]
+        pos=sofaObject.position
         
-        p.resetBasePositionAndOrientation(self.obj_id, position, p.getQuaternionFromEuler(orientation))
-        self.lastSofaRot=orient
-        self.lastSofaPos=pos
-        return position,orientation
-        """
-        #print(str(position)+ " 2")
-        #orientation[2]+=0.01
-        #return position,orientation
-        #return position, orientation
+        orient=[degtoRad(i) for i in sofaObject.orientation]
+
+
+        pos,orient =costumFctDict[self.sofaName](self,pos,orient)
+                
+        return pos,orient
+        pos=(pos[0],pos[1],pos[2]+2)
 
 
 class Sensor:

@@ -66,7 +66,7 @@ def exportMesh(node):
     triangles=node.tissue.visual.VMapping.output.triangles.value
     positions=node.tissue.visual.VMapping.output.position.value
     mesh=trimesh.Trimesh(vertices=positions, faces=triangles)
-    return mesh,triangles,positions
+    return mesh
 def faceNormal(points):
     p1, p2, p3 = points
     
@@ -211,7 +211,8 @@ class TactoController(Sofa.Core.Controller):
         
         
         sendForce=self.forceDict[self.forceMode]()
-        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles(),sendForce,mesh=exportMesh(self))
+        self.dataSender.update("Sensor",self.transformWrapper.getPosition(),self.getAngles(),sendForce,mesh=exportMesh(self))
+        self.dataSender.update(name="Tissue",pos=None,mesh=exportMesh(self))
     def reset(self):
         self.transformWrapper.setPosition([0.0, 0.13, 0, 0, 0, -0.7071068, 0.7071068])
         self.rigidobject.velocity.value=[[0, 0, 0, 0, 0, 0]]
@@ -250,7 +251,7 @@ class TactoController(Sofa.Core.Controller):
         self.scaleIncr=0.1
         self.scale=0.01
         self.transformWrapper=RigidDof(self.rigidobject)
-        self.dataSender.update(self.transformWrapper.getPosition(),self.getAngles())
+        self.dataSender.update("Sensor",self.transformWrapper.getPosition(),self.getAngles())
         self.controllMode=controllMode
         if self.controllMode==ControllMode.position:
             self.node.addObject('FixedConstraint', name="FixedConstraint", indices="0")
