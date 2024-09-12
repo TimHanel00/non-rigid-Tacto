@@ -1,0 +1,42 @@
+tacto:
+  width: 120
+  height: 160
+  visualize_gui: true
+digit:
+  urdf_path: mesh/digit.urdf
+  base_position:
+  - 0
+  - 0
+  - 0
+  base_orientation:
+  - 0.0
+  - -0.707106
+  - 0.0
+  - 0.707106
+  use_fixed_base: true
+object:
+  urdf_path: mesh/sphere_small.urdf
+  base_position:
+  - 0
+  - 0
+  - 0
+  global_scaling: 1.0
+  use_fixed_base: true
+object_control_panel:
+  slider_params:
+    position_low:
+    - -0.04
+    - -0.02
+    - 0.02
+    position_high:
+    - 0.005
+    - 0.02
+    - 0.03
+pybullet_camera:
+  cameraDistance: 0.4
+  cameraYaw: 0.0
+  cameraPitch: -89.999
+  cameraTargetPosition:
+  - 0
+  - 0.01
+  - 2
