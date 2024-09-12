@@ -19,25 +19,39 @@ class sofaObject:
         self.position=position
         self.orientation=orientation
         self.mesh=mesh
-        self.normalForces=forces
+        self.forces=forces
+    
     def updateMesh(self,mesh):
         self.mesh=mesh
+    def __repr__(self):
+        return f"sofaObject(name={self.name}, position={self.position}, orientation={self.orientation}, forces={self.forces}, mesh={self.mesh})\n"
 class TransportData:
     def __init__(self):
         self.sofaOjectDict={}
+    def addObjectG(self,key,val):
+        self.sofaOjectDict[key]=val
+
     def addObject(self,objectD):
         if objectD.name in self.sofaOjectDict:
             if objectD.position is None and objectD.mesh is not None:
-                self.sofaOjectDict[objectD.name].mesh=objectD.mesh
+                self.sofaOjectDict[objectD.name].updateMesh(objectD.mesh)
+                return
         self.sofaOjectDict[objectD.name]=objectD
+        #print(self.sofaOjectDict)
+    def getDict(self):
+        return self.sofaOjectDict
     def get(self,name):
-        print(self.sofaOjectDict.items())
+        #print(self.sofaOjectDict.items())
         return self.sofaOjectDict[name]
     def tolist(self):
         return [v for k,v in self.sofaOjectDict.items()]  
 
     def __repr__(self):
-        return f"TransportData(position={self.position}, orientation={self.orientation}, forces={self.normalForces})"
+        s=""
+        for k in self.sofaOjectDict:
+            v=self.sofaOjectDict[k]
+            s+=f"TransportData({v})"
+        return s
 
 class DataReceiver(threading.Thread):
     def __init__(self, conn):
@@ -51,11 +65,10 @@ class DataReceiver(threading.Thread):
             if self.conn.poll(0.1):  # Poll for 0.1 second
                 self.latest_data = self.conn.recv()
                 #print(f"Received: {self.latest_data}")
-    
-    def get(self,name):
-        return self.latest_data.get(name)
     def get(self):
         return self.latest_data
+    def get(self,name):
+        return self.latest_data.sofaOjectDict[name]
     def tolist(self):
         self.latest_data.tolist()
     def stop(self):
@@ -73,12 +86,17 @@ class Sender(threading.Thread):
         self.curData.addObject(sofaObject(name=name,position=pos,orientation=orientation,forces=forces,mesh=mesh))
         #self.curData = TransportData(pos, orientation, forces,self.curData.tissuePos,self.curData.tissueOr,mesh)
     def copyLatest(self):
-        return copy.deepcopy(self.curData)
+        ret=TransportData()
+        for key,val in self.curData.getDict().items():
+            pos=[val.position[0],val.position[1],(val.position[2]+2.0)]
+            ret.addObjectG(key,sofaObject(name=val.name,position=pos,orientation=val.orientation,forces=val.forces,mesh=val.mesh))
+        #print(ret.sofaOjectDict)
+        return ret
     def run(self):
         while self.running:
             if self.curData:
                 self.conn.send(self.copyLatest())
-                #print(f"Sent: {self.curData}")
+                #print(f"Sent: {self.copyLatest()}")
                   # Reset after sending
             sleep(0.01)  # Simulate some delay
 

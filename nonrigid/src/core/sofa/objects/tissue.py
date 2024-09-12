@@ -59,7 +59,7 @@ class Tissue(Sofa.Core.Controller):
                 surface_mesh: Optional[str] = None,
                 grid_resolution: list = [10,10,10],
                 use_caribou: bool = False,
-                solver: SolverType = SolverType.CG,
+                solver=None,
                 analysis: TimeIntegrationType = TimeIntegrationType.EULER,
                 collision: bool = False,
                 check_displacement : bool =False,
@@ -71,7 +71,8 @@ class Tissue(Sofa.Core.Controller):
                 mechanical: bool =True,
                 collision_spheres_radius: float = 0.005,
                 view: bool = False,
-                senderD = None
+                senderD = None,
+                massDensity : float =0.01
                 
     ):
         """ 
@@ -107,6 +108,7 @@ class Tissue(Sofa.Core.Controller):
         self.surface_node=None
         self.stiffness=contact_stiffness
         self.dataSender=senderD
+        self.solver=solver
         # Check on caribou
         if use_caribou:
             # TODO check if caribou libraries are there. If not, use default components setting use_caribou to false
@@ -173,7 +175,7 @@ class Tissue(Sofa.Core.Controller):
                                 #totalMass=1.0, 
                                 #name='mass'
                                 #)	
-        self.node.addObject("MeshMatrixMass", name="Mass", massDensity=0.01)
+        self.node.addObject("MeshMatrixMass", name="Mass", massDensity=massDensity)
         self.node.addObject('FixedConstraint', name="FixedConstraint", indices="3 39 64")
         #self.node.addObject('LinearSolverConstraintCorrection')
         # Force field
@@ -181,17 +183,19 @@ class Tissue(Sofa.Core.Controller):
 
         # Solver
         self.node.addObject('EulerImplicitSolver', name="cg_odesolver")
-        self.node.addObject("CGLinearSolver",iterations=20, tolerance=1e-2, threshold=1e-2)
+        #self.node.addObject("CGLinearSolver", iterations=20, tolerance=1e-2,threshold=1e-2)
+        if solver!=None:
+            self.node.addObject(solver.objectName,iterations=solver.iterations, tolerance=solver.tolerance, threshold=solver.threshold)
         #self.node.addObject("PrecomputedConstraintCorrection")
-        """
-        add_solver( parent_node=self.node, 
-                    analysis_type=analysis, 
-                    solver_type=solver, 
-                    solver_name="Solver",
-                    add_constraint_correction=False,##used to be based on collision or nah but leads to error
-                    constraint_correction=ConstraintCorrectionType.PRECOMPUTED #PRECOMPUTED, #UNCOUPLED
-                    )"""
-
+        else:
+    
+            add_solver( parent_node=self.node, 
+                        analysis_type=analysis, 
+                        solver_type=SolverType.CG, 
+                        solver_name="Solver",
+                        add_constraint_correction=False,##used to be based on collision or nah but leads to error
+                        constraint_correction=ConstraintCorrectionType.PRECOMPUTED #PRECOMPUTED, #UNCOUPLED
+                        )
         # Surface mesh
         if surface_mesh is not None:
             surface_node_name = f"{node_name}Surface"

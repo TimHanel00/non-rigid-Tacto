@@ -10,6 +10,12 @@ def retrieveContacts(event,root):
                     print("Contact point:", contact.contactPoints())
                     print("Contact normal:", contact.contactNormals())
                     print("Contact distance:", contact.contactDistances())
+class Solver:
+    def __init__(self,objectName:int,iterations:int,tolerance:float,threshold:float):
+        self.objectName=objectName
+        self.iterations=iterations
+        self.tolerance=tolerance
+        self.threshold=threshold
 class Environment():
      
     def __init__(self,root:Sofa.Core.Node):
@@ -45,7 +51,6 @@ class Environment():
         self.root.addObject('CollisionPipeline', verbose=0,draw=0,depth=2)
         self.root.addObject('BruteForceDetection', name="BruteForceBroadPhase")
         self.root.addObject('NewProximityIntersection', name="Proximity",alarmDistance=0.01,contactDistance=0.001)
-        self.root.addObject('CollisionResponse', name="CollisionResponse", response="PenalityContactForceField")
         #self.root.addObject('FreeMotionAnimationLoop')
         self.root.addObject('GenericConstraintSolver', name="GCS", maxIt=20, tolerance=1e-2, computeConstraintForces=True)
         self.root.addObject('DefaultContactManager', name='Response', response='PenalityContactForceField')

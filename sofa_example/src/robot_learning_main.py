@@ -12,7 +12,7 @@ import SofaRootConfig
 from multiprocessing import Process, Pipe
 from threading import Thread
 #from core.sofa.components.solver import TimeIntegrationType, ConstraintCorrectionType, SolverType, add_solver
-from SofaRootConfig import Environment
+from SofaRootConfig import Environment,Solver
 from stlib3.scene import MainHeader, ContactHeader
 from stlib3.solver import DefaultSolver
 from stlib3.physics.rigid import Cube, Sphere, Floor
@@ -29,7 +29,17 @@ USE_GUI = True
 
 vtkMesh=None
 material=None
+
+solver=Solver(objectName="CGLinearSolver",iterations=30, tolerance=1e-3, threshold=1e-3)
+
+
+
+
+
+
+
 def createCollisionMesh(root):#Part2
+    
     #root.addObject('VisualStyle', displayFlags="showForceFields")
 
     root.addObject("MeshGmshLoader",name="meshLoaderCoarse",scale=0.1,filename="mesh/liver.msh")
@@ -55,36 +65,9 @@ def createCollisionMesh(root):#Part2
     collision.addObject("MechanicalObject",name="StoringForces",scale=1.0)
     collision.addObject("TriangleCollisionModel",name="CollisionModel",contactStiffness=1.0)
     collision.addObject("BarycentricMapping",name="CollisionMapping",input="@../", output="@StoringForces")
-
-
-class CollisionResponseHandler(Sofa.Core.Controller):
-    def __init__(self):
-        super().__init__()
-        self.collisions = []
-
-    def onBeginAnimationStep(self, dt):
-        self.collisions.clear()
-
-    def onEndAnimationStep(self, dt):
-        for coll in self.collisions:
-            print(f"Collision detected between {coll['object1']} and {coll['object2']}")
-            print(f"Normal force: {coll['normalForce']}")
-
-    def onCollision(self, collision):
-        obj1 = collision.getContactElements()[0]
-        obj2 = collision.getContactElements()[1]
-        normal_force = collision.getNormalForce()
-        self.collisions.append({
-            'object1': obj1.getName(),
-            'object2': obj2.getName(),
-            'normalForce': normal_force
-        })
-
-        #t.stop()
-
 def createScene(root,dataSend):
+    global solver
     env=Environment(root)
-    root.addObject(CollisionResponseHandler())
     material=Material(
                                 young_modulus = 200000.0,
                                 poisson_ratio = 0.47273863208820904,
@@ -102,19 +85,20 @@ def createScene(root,dataSend):
                         node_name='Tissue',
                         check_displacement=False,
                         #grid_resolution=[8,2,6], # for simulation with hexa
-                        solver=SolverType.CG,
+                        solver=solver,
                         analysis=TimeIntegrationType.EULER,
                         surface_mesh="mesh/surface_A.stl", # e.g. surface for visualization or collision
                         view=True,
                         collision=True,
                         contact_stiffness=1.0,
+                        massDensity=10.0,
                         senderD=dataSend
                         )
                     )
     #print(type(tissue))
     #createCollisionMesh(root)
     print(type(root))
-    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed2.stl",senderD=dataSend,parent=root,tissue=tissue,controllMode=ControllMode.position))
+    root.addObject(TactoController(name = "Tacto",meshfile="mesh/digit_transformed2.stl",senderD=dataSend,parent=root,solver=solver,stiffness=10.0,forceMode=ForceMode.dof,controllMode=ControllMode.forceField))
     return root
 def sofaSimLoop(root,sendConn):
     

@@ -57,11 +57,6 @@ def getSofaName(linkobj):
     return ""
 def tissueHandle(link,sofaObject,pos,orient):
     link.mesh=sofaObject.mesh
-    if(link.initSofaPos is None  and round(pos[0],3)!=0):
-        link.initSofaPos=pos
-    if link.initSofaPos is not None:
-        pos=[y-x for x,y in zip(pos,link.initSofaPos)]
-    pos=(pos[0],pos[1],pos[2]+2)
     if link.mesh is not None:
         #print("updatingMesh")
         
@@ -86,11 +81,13 @@ def tissueHandle(link,sofaObject,pos,orient):
         p.removeBody(old_id)
                 
     return pos,orient 
-def sensorHandle(link,pos,orient):
-    pos=(pos[0],pos[1],pos[2]+2)
+def sensorHandle(link,sofaObject,pos,orient):
+    link.force=sofaObject.forces
+    if link.force>10.0:
+        print(link.force)
     p.resetBasePositionAndOrientation(link.obj_id, pos, p.getQuaternionFromEuler(orient))
     return pos,orient
-def default(link,pos,orient):
+def default(link,sofaObject,pos,orient):
     return pos,orient
 costumFctDict={"Sensor":sensorHandle,"Tissue":tissueHandle,"":default}
 @dataclass
@@ -107,6 +104,9 @@ class Link:
     pybullet_id: int #ID used explicitly for pybullet
     def get_pose(self,dataReceive=None):
         global costumFctDict
+        dic=dataReceive.latest_data.getDict()
+        #for k,v in dic:
+            #print(v)
         p.setRealTimeSimulation(0)
         if self.link_id < 0:
             # get the base pose if link ID < 0
@@ -140,12 +140,13 @@ class Link:
         orient=None
         self.sofaName=getSofaName(self)
         if dataReceive==None:
+            #print("receiveNone")
             return position, orientation
         if dataReceive.latest_data is None:
+            #print("receiveDataNone")
             return position, orientation
-        if dataReceive.tolist() is None:
-            return position, orientation
-        if self.sofaName not in dataReceive.tolist():
+        if self.sofaName not in dic:
+            print("name not in dict")
             return position, orientation
         sofaObject=dataReceive.get(self.sofaName)
             
@@ -154,7 +155,7 @@ class Link:
         orient=[degtoRad(i) for i in sofaObject.orientation]
 
 
-        pos,orient =costumFctDict[self.sofaName](self,pos,orient)
+        pos,orient =costumFctDict[self.sofaName](self,sofaObject,pos,orient)
                 
         return pos,orient
         pos=(pos[0],pos[1],pos[2]+2)
@@ -317,7 +318,7 @@ class Sensor:
                 #print(type(self.objects[obj_name].mesh))
                 #print(self.objects[obj_name].mesh)
                 #print(type(self.renderer.current_object_nodes[obj_name].mesh))
-                self.renderer.current_object_nodes[obj_name].mesh=pyrender.Mesh.from_trimesh(self.objects[obj_name].mesh[0])
+                self.renderer.current_object_nodes[obj_name].mesh=pyrender.Mesh.from_trimesh(self.objects[obj_name].mesh)
                 self.renderer.object_nodes[obj_name].mesh==self.objects[obj_name].mesh
 
     def get_force(self, cam_name):

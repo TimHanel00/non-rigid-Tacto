@@ -13,6 +13,7 @@ import logging
 from time import sleep
 from dataTransport import TransportData,DataReceiver
 log = logging.getLogger(__name__)
+
 def stlToPyrenderMesh(meshfile):
     stl_mesh = mesh.Mesh.from_file(meshfile)
 
