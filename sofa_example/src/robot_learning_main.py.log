@@ -1,0 +1,15 @@
+
+--- NEW SESSION: 06/09/2024 12:33:21 ---
+/Tissue/Visual/StoringVis.showColor = 1 1 1 1
+
+--- NEW SESSION: 16/09/2024 15:29:37 ---
+//VisualStyle.displayFlags = showVisual showBehavior showCollision hideMapping hideOptions
+
+--- NEW SESSION: 16/09/2024 15:38:37 ---
+//VisualStyle.displayFlags = hideVisual showBehaviorModels showForceFields hideInteractionForceFields hideCollision hideMapping hideOptions
+//VisualStyle.displayFlags = hideVisual hideBehaviorModels showForceFields hideInteractionForceFields hideCollision hideMapping hideOptions
+
+--- NEW SESSION: 18/09/2024 17:31:46 ---
+/Tacto/Gel/dofs.drawMode = 0
+/Tacto/Gel/dofs.showColor = 1 1 1 1
+/Tacto/Gel/dofs.showIndicesScale = 0.73
