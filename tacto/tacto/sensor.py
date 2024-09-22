@@ -104,7 +104,7 @@ class Link:
     pybullet_id: int #ID used explicitly for pybullet
     def get_pose(self,dataReceive=None):
         global costumFctDict
-        dic=dataReceive.latest_data.getDict()
+        
         #for k,v in dic:
             #print(v)
         p.setRealTimeSimulation(0)
@@ -145,8 +145,9 @@ class Link:
         if dataReceive.latest_data is None:
             #print("receiveDataNone")
             return position, orientation
+        dic=dataReceive.latest_data.getDict()
         if self.sofaName not in dic:
-            print("name not in dict")
+            #print("name not in dict")
             return position, orientation
         sofaObject=dataReceive.get(self.sofaName)
             

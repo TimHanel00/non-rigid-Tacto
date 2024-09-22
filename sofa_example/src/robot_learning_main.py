@@ -91,7 +91,7 @@ def createScene(root,dataSend):
                         view=True,
                         collision=True,
                         contact_stiffness=1.0,
-                        massDensity=10.0,
+                        #massDensity=10.0,
                         senderD=dataSend
                         )
                     )
