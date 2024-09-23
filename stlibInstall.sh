@@ -15,7 +15,7 @@ if [ ! -z "$SOFA_ROOT" ]; then
 			echo "in here"
 			cd stlib
 			echo $HOME/.bashrc
-			#rm -r build
+			rm -r build
 			mkdir build
 			cd build
 			conda install -c conda-forge libstdcxx-ng
