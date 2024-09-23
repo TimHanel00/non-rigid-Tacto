@@ -13,13 +13,10 @@ fi
 if [ ! -z "$SOFA_ROOT" ]; then 
 	if [ ! -z "$CONDA_PREFIX" ]; then
 			echo "in here"
-			git submodule update --init --recursive
 			cd stlib
-			git checkout v22.06
-			git reset --hard
 			echo $HOME/.bashrc
 			#rm -r build
-			#mkdir build
+			mkdir build
 			cd build
 			conda install -c conda-forge libstdcxx-ng
 			cmake -DCMAKE_PREFIX_PATH:=$SOFA_ROOT -DPLUGIN_SOFAPYTHON=ON -DSOFA_BUILD_METIS=ON ..

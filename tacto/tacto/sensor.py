@@ -85,6 +85,7 @@ def sensorHandle(link,sofaObject,pos,orient):
     link.force=sofaObject.forces
     if link.force>10.0:
         print(link.force)
+        print("force")
     p.resetBasePositionAndOrientation(link.obj_id, pos, p.getQuaternionFromEuler(orient))
     return pos,orient
 def default(link,sofaObject,pos,orient):

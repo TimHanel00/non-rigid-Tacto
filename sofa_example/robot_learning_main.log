@@ -3614,3 +3614,36 @@
 [2024-09-22 22:52:13,430][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
 [2024-09-22 22:52:13,726][tactoEnvironment][INFO] - Initializing world
 [2024-09-22 22:52:13,772][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:01:28,169][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:01:28,407][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:01:28,476][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:02:34,840][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:02:35,056][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:02:35,091][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:02:58,537][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:02:58,768][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:02:58,809][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:03:53,080][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:03:53,327][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:03:53,417][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:06:10,164][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:06:10,441][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:06:10,586][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:06:32,288][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:06:32,563][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:06:32,680][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:07:02,646][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:07:02,932][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:07:03,031][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:08:28,191][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:08:28,479][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:08:28,569][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:08:49,939][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:08:50,197][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:08:50,295][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:10:41,810][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:10:42,042][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:10:42,081][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)
+[2024-09-23 22:10:59,067][tacto.renderer][INFO] - Loading configuration from: /home/tim/extended_space/robot_learning/tacto/tacto/config_digit.yml
+[2024-09-23 22:10:59,282][tactoEnvironment][INFO] - Initializing world
+[2024-09-23 22:10:59,323][pybulletX._wrapper][INFO] - Calling pybullet.setGravity(gravX=0, gravY=0, gravZ=-9.81, physicsClientId=0)

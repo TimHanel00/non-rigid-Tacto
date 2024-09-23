@@ -244,17 +244,18 @@ class Tissue(Sofa.Core.Controller):
     def onSimulationInitDoneEvent(self, __):
         self.previous_pos = np.asarray(self.state.rest_position.value)
     def getAngles(self):
+        
         from splib3.numerics.quat import Quat
         eulerAngles= Quat(self.transformWrapper.getOrientation().tolist()).getEulerAngles()
         return [round(self.radTodeg(el),4) for el in eulerAngles]
     def onAnimateEndEvent(self, __):
         # Check for simulation instability at the end of each time step
         #print(f'pos: {self.transformWrapper.getPosition()}')
-        
         pos=self.transformWrapper.getPosition()
         angles=self.getAngles()
         if self.dataSender is not None:
             self.dataSender.update("Tissue",pos,angles)
+        
         return
         if(self.check_displacement):
             #print(type(self.state.position))
@@ -263,7 +264,7 @@ class Tissue(Sofa.Core.Controller):
             self.previous_pos = current_pos
             
             self.is_stable, self.is_moving = check_valid_displacement(displ, low_thresh=1e-01, high_thresh=0.4)		
-
+        
     def reset(self):
         with self.state.position.writeable() as positions:
             positions[:] = self.state.rest_position.value

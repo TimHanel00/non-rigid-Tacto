@@ -246,7 +246,7 @@ class TactoController(Sofa.Core.Controller):
         self.node.addObject("UniformMass",vertexMass=[1., 1., [1., 0., 0., 0., 1., 0., 0., 0., 1.][:]])
         self.addVisuals(self.node)
         self.collision=self.addCollision(self.node)
-        self.node.addObject("RestShapeSpringsForceField",stiffness='100000',angularStiffness='100000',external_rest_shape='@TactoMechanics',points='0',external_points='0')
+        #self.node.addObject("RestShapeSpringsForceField",stiffness='100000',angularStiffness='100000',external_rest_shape='@TactoMechanics',points='0',external_points='0')
         #self.node.addObject("LCPForceFeedback",name="LPCs",forceCoef="1.0")
         
         self.listener = self.node.addObject(
